@@ -1,6 +1,6 @@
 {
   "private": true,
-  "homepage": "https://calc.pokemonshowdown.com/",
+  "homepage": "https://calc.kaskadeshowdown.com/",
   "repository": "github:smogon/damage-calc",
   "license": "MIT",
   "devDependencies": {
