@@ -6,6 +6,7 @@ var damageResults;
 $("#p2 .ability").bind("keyup change", function () {
 	autosetWeather($(this).val(), 1);
 	autosetTerrain($(this).val(), 1);
+	updateAllWeatherEffects();
 });
 
 var resultLocations = [[], []];

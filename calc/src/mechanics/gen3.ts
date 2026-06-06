@@ -26,8 +26,8 @@ export function calculateADV(
 ) {
   checkAirLock(attacker, field);
   checkAirLock(defender, field);
-  checkForecast(attacker, field.weather);
-  checkForecast(defender, field.weather);
+  checkForecast(attacker, field);
+  checkForecast(defender, field);
   checkIntimidate(gen, attacker, defender);
   checkIntimidate(gen, defender, attacker);
   attacker.stats.spe = getFinalSpeed(gen, attacker, field, field.attackerSide);
@@ -59,13 +59,14 @@ export function calculateADV(
 
   if (move.named('Weather Ball')) {
     move.type =
-      field.hasWeather('Sun') ? 'Fire'
-      : field.hasWeather('Rain') ? 'Water'
-      : field.hasWeather('Sand') ? 'Rock'
-      : field.hasWeather('Hail') ? 'Ice'
+      field.hasClimateWeather('Sun', 'Desolate Land') ? 'Fire'
+      : field.hasClimateWeather('Rain', 'Primordial Sea') ? 'Water'
+      : field.hasIrritantWeather('Sand') ? 'Rock'
+      : field.hasClimateWeather('Hail', 'Snow') ? 'Ice'
       : 'Normal';
     move.category = move.type === 'Rock' ? 'Physical' : 'Special';
-    desc.weather = field.weather;
+    if (move.type === 'Rock') desc.irritantWeather = field.irritantWeather;
+    else desc.climateWeather = field.climateWeather;
     desc.moveType = move.type;
     desc.moveBP = move.bp;
   } else if (move.named('Brick Break')) {
@@ -403,17 +404,18 @@ function calculateFinalModsADV(
     baseDamage = Math.floor(baseDamage / 2);
   }
 
-  if ((field.hasWeather('Sun') && move.hasType('Fire')) ||
-      (field.hasWeather('Rain') && move.hasType('Water'))) {
+  if ((field.hasClimateWeather('Sun') && move.hasType('Fire')) ||
+      (field.hasClimateWeather('Rain') && move.hasType('Water'))) {
     baseDamage = Math.floor(baseDamage * 1.5);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
   } else if (
-    (field.hasWeather('Sun') && move.hasType('Water')) ||
-    (field.hasWeather('Rain') && move.hasType('Fire')) ||
-    (move.named('Solar Beam') && field.hasWeather('Rain', 'Sand', 'Hail'))
+    (field.hasClimateWeather('Sun') && move.hasType('Water')) ||
+    (field.hasClimateWeather('Rain') && move.hasType('Fire')) ||
+    (move.named('Solar Beam') && (field.hasClimateWeather('Rain', 'Hail') || field.hasIrritantWeather('Sand')))
   ) {
     baseDamage = Math.floor(baseDamage / 2);
-    desc.weather = field.weather;
+    if (field.hasIrritantWeather('Sand')) desc.irritantWeather = field.irritantWeather;
+    else desc.climateWeather = field.climateWeather;
   }
 
   if (attacker.hasAbility('Flash Fire') && attacker.abilityOn && move.hasType('Fire')) {
@@ -432,7 +434,8 @@ function calculateFinalModsADV(
     desc.isSwitching = 'out';
   }
 
-  if (move.named('Weather Ball') && field.weather) {
+  if (move.named('Weather Ball') && (field.climateWeather || field.irritantWeather || field.energyWeather ||
+    field.clearingWeather || field.cataclysmWeather)) {
     baseDamage *= 2;
     desc.moveBP = move.bp * 2;
   }

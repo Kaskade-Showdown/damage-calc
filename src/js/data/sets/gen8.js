@@ -252,7 +252,7 @@ var SETDEX_SS = {
     "Monotype Focus Sash Trapper": {"ability":"Arena Trap","item":"Focus Sash","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Stone Edge","Reversal","Sucker Punch"]}
   },
   "Dugtrio-Alola": {
-    "PU Sand Wallbreaker": {"ability":"Sand Force","item":"Life Orb","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Iron Head","Sucker Punch","Rock Slide"]},
+    "PU Sand Wallbreaker": {"ability":"Earth Force","item":"Life Orb","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Iron Head","Sucker Punch","Rock Slide"]},
     "ZU SubToxic": {"ability":"Tangling Hair","item":"Leftovers","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Substitute","Toxic","Earthquake","Iron Head"]},
     "ZU Offensive Stealth Rock": {"ability":"Tangling Hair","item":"Life Orb","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Stealth Rock","Earthquake","Iron Head","Sucker Punch"]}
   },
@@ -901,8 +901,8 @@ var SETDEX_SS = {
     "1v1 Iron Defense + Body Press": {"ability":"Sturdy","item":"Rocky Helmet","nature":"Impish","evs":{"hp":252,"df":240,"sd":16},"moves":["Body Press","Iron Defense","Heavy Slam","Taunt"]}
   },
   "Steelix-Mega": {
-    "National Dex RU Stealth Rock": {"ability":"Sand Force","item":"Steelixite","nature":"Careful","evs":{"hp":252,"at":32,"df":8,"sd":216},"moves":["Stealth Rock","Earthquake","Gyro Ball","Toxic"]},
-    "National Dex Monotype Curse (Ground)": {"ability":"Sand Force","item":"Steelixite","nature":"Impish","evs":{"hp":252,"at":4,"sd":252},"moves":["Curse","Heavy Slam","Rest","Sleep Talk"]}
+    "National Dex RU Stealth Rock": {"ability":"Earth Force","item":"Steelixite","nature":"Careful","evs":{"hp":252,"at":32,"df":8,"sd":216},"moves":["Stealth Rock","Earthquake","Gyro Ball","Toxic"]},
+    "National Dex Monotype Curse (Ground)": {"ability":"Earth Force","item":"Steelixite","nature":"Impish","evs":{"hp":252,"at":4,"sd":252},"moves":["Curse","Heavy Slam","Rest","Sleep Talk"]}
   },
   "Qwilfish": {
     "PU Spikes": {"ability":"Intimidate","item":"Rocky Helmet","nature":"Jolly","evs":{"hp":252,"at":4,"sp":252},"moves":["Spikes","Taunt","Waterfall","Thunder Wave"]},
@@ -1687,8 +1687,8 @@ var SETDEX_SS = {
     "CAP Defensive Stealth Rock": {"ability":"Rough Skin","item":"Rocky Helmet","nature":"Impish","evs":{"hp":252,"df":136,"sp":120},"moves":["Stealth Rock","Earthquake","Toxic","Endure"]}
   },
   "Garchomp-Mega": {
-    "National Dex Scale Shot Sweeper": {"ability":"Sand Force","item":"Garchompite","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Swords Dance","Earthquake","Scale Shot","Fire Fang"]},
-    "National Dex Monotype Swords Dance (Ground)": {"ability":"Sand Force","item":"Garchompite","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Swords Dance","Earthquake","Fire Fang","Scale Shot"]}
+    "National Dex Scale Shot Sweeper": {"ability":"Earth Force","item":"Garchompite","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Swords Dance","Earthquake","Scale Shot","Fire Fang"]},
+    "National Dex Monotype Swords Dance (Ground)": {"ability":"Earth Force","item":"Garchompite","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Swords Dance","Earthquake","Fire Fang","Scale Shot"]}
   },
   "Munchlax": {
     "LC Defensive": {"level":5,"ability":"Thick Fat","item":"Berry Juice","nature":"Adamant","evs":{"at":236,"df":36,"sd":236},"moves":["Curse","Body Slam","Fire Punch","Recycle"]}

@@ -546,6 +546,31 @@ const SV = SS.concat(
     'Syrupy Apple',
     'Unremarkable Teacup',
     'Wellspring Mask',
+    // swse
+    'Amaze-Drive',
+    'Avoca Berry',
+    'Bacchus Laurel',
+    'Black Augurite',
+    'Coffeegeist Cappuccino',
+    'Energy Channelizer',
+    'Energy Nullifier',
+    'Flat Unovan',
+    'Frost Orb',
+    'Iridescent Scale',
+    'Keybone',
+    'Mist Stone',
+    'Mystic Tamroast Doppio',
+    'Peat Block',
+    'Pikaspresso',
+    'Portable Turbine',
+    'Razor Hook',
+    'Sandygast Mocha',
+    'Volatile Spray',
+    'Weather Balloon',
+    'Weather Vane',
+    'Whirligig',
+    'Worcane Cold Brew',
+    'Zeta Cell',
   ].sort()
 );
 const CHAMPIONS = [
@@ -746,6 +771,8 @@ const BERRIES: {[berry: string]: {t: I.TypeName; p: number}} = {
   'Wepear Berry': {t: 'Electric', p: 90},
   'Wiki Berry': {t: 'Rock', p: 80},
   'Yache Berry': {t: 'Ice', p: 80},
+  // swse
+  'Avoca Berry': {t: 'Ice', p: 80},
 };
 
 export const MEGA_STONES = Object.assign({}, GEN_6_MEGA_STONES, ZA_MEGA_STONES);

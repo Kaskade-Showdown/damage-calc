@@ -28,7 +28,7 @@ header {
     height: 60px;
 }
 .nav-wrapper {
-    width: 700px;
+    width: 850px;
     margin: 0 auto;
     position: relative;
 }
@@ -552,6 +552,18 @@ th {
 }
 select.toxic-counter {
     width: 5.5em;
+}
+select.blight-counter {
+    width: 5.5em;
+}
+.magnetize-boosts-row {
+    margin-top: 8px;
+}
+.magnetize-boosts-row label {
+    width: 10em;
+}
+select.magnetize-boosts {
+    width: 7em;
 }
 .move-selector, .move-bp {
     font-size: 0.9em;

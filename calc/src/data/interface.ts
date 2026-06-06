@@ -11,12 +11,22 @@ export type ItemName = string & As<'ItemName'>;
 export type MoveName = string & As<'MoveName'>;
 export type SpeciesName = string & As<'SpeciesName'>;
 
-export type StatusName = 'slp' | 'psn' | 'brn' | 'frz' | 'par' | 'tox';
+export type StatusName = 'slp' | 'psn' | 'brn' | 'frz' | 'par' | 'tox' | 'fst' | 'blt';
 
 export type GameType = 'Singles' | 'Doubles';
 export type Terrain = 'Electric' | 'Grassy' | 'Psychic' | 'Misty';
-export type Weather =
-  | 'Sand' | 'Sun' | 'Rain' | 'Hail' | 'Snow' | 'Harsh Sunshine' | 'Heavy Rain' | 'Strong Winds';
+export type ClimateWeather =
+  | 'Sun' | 'Rain' | 'Hail' | 'Snow' | 'Blood Moon' | 'Fog' | 'Desolate Land' | 'Primordial Sea';
+
+export type IrritantWeather =
+  | 'Sand' | 'Dust' | 'Pollen' | 'Pheromones' | 'Smog' | 'Fairy Dust';
+
+export type EnergyWeather =
+  | 'Battle Aura' | 'Paranormal Activity' | 'Dreamscape' | 'Dragon Force' | 'Thunderstorm' | 'Magnetosphere';
+
+export type ClearingWeather = 'Strong Winds' | 'Delta Stream';
+
+export type CataclysmWeather = 'Ultra Radiance';
 
 export type NatureName =
   'Adamant' | 'Bashful' | 'Bold' | 'Brave' | 'Calm' |

@@ -49,8 +49,8 @@ export function calculateBWXY(
 
   checkAirLock(attacker, field);
   checkAirLock(defender, field);
-  checkForecast(attacker, field.weather);
-  checkForecast(defender, field.weather);
+  checkForecast(attacker, field);
+  checkForecast(defender, field);
   checkItem(attacker, field.isMagicRoom);
   checkItem(defender, field.isMagicRoom);
   checkRawStatChanges(attacker, field.attackerSide.isPowerTrick, field.isWonderRoom);
@@ -124,12 +124,13 @@ export function calculateBWXY(
 
   if (move.named('Weather Ball')) {
     move.type =
-      field.hasWeather('Sun', 'Harsh Sunshine') ? 'Fire'
-      : field.hasWeather('Rain', 'Heavy Rain') ? 'Water'
-      : field.hasWeather('Sand') ? 'Rock'
-      : field.hasWeather('Hail') ? 'Ice'
+      field.hasClimateWeather('Sun', 'Desolate Land') ? 'Fire'
+      : field.hasClimateWeather('Rain', 'Primordial Sea') ? 'Water'
+      : field.hasIrritantWeather('Sand') ? 'Rock'
+      : field.hasClimateWeather('Hail', 'Snow') ? 'Ice'
       : 'Normal';
-    desc.weather = field.weather;
+    if (move.type === 'Rock') desc.irritantWeather = field.irritantWeather;
+    else desc.climateWeather = field.climateWeather;
     desc.moveType = move.type;
   } else if (move.named('Judgment') && attacker.item && attacker.item.includes('Plate')) {
     move.type = getItemBoostType(attacker.item)!;
@@ -222,17 +223,17 @@ export function calculateBWXY(
   }
 
   if (
-    (field.hasWeather('Harsh Sunshine') && move.hasType('Water')) ||
-    (field.hasWeather('Heavy Rain') && move.hasType('Fire'))
+    (field.hasClimateWeather('Desolate Land') && move.hasType('Water')) ||
+    (field.hasClimateWeather('Primordial Sea') && move.hasType('Fire'))
   ) {
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
     return result;
   }
 
-  if (field.hasWeather('Strong Winds') && defender.hasType('Flying') &&
+  if (field.hasClearingWeather('Strong Winds', 'Delta Stream') && defender.hasType('Flying') &&
       gen.types.get(toID(move.type))!.effectiveness['Flying']! > 1) {
     typeEffectiveness /= 2;
-    desc.weather = field.weather;
+    desc.clearingWeather = field.clearingWeather;
   }
 
   if ((defender.hasAbility('Wonder Guard') && typeEffectiveness <= 1) ||
@@ -526,7 +527,7 @@ export function calculateBasePowerBWXY(
     desc.moveBP = basePower;
     break;
   case 'Weather Ball':
-    basePower = move.bp * (field.weather && !field.hasWeather('Strong Winds') ? 2 : 1);
+    basePower = move.bp * (!!(field.climateWeather || field.irritantWeather || field.energyWeather) ? 2 : 1);
     desc.moveBP = basePower;
     break;
   case 'Fling':
@@ -661,12 +662,12 @@ export function calculateBPModsBWXY(
     desc.attackerAbility = attacker.ability;
   } else if (
     attacker.hasAbility('Sand Force') &&
-    field.hasWeather('Sand') &&
+    field.hasIrritantWeather('Sand') &&
     move.hasType('Rock', 'Ground', 'Steel')
   ) {
     bpMods.push(5325);
     desc.attackerAbility = attacker.ability;
-    desc.weather = field.weather;
+    desc.irritantWeather = field.irritantWeather;
   } else if (
     (attacker.hasAbility('Reckless') && (move.recoil || move.hasCrashDamage)) ||
     (attacker.hasAbility('Iron Fist') && move.flags.punch)
@@ -726,18 +727,19 @@ export function calculateBPModsBWXY(
     desc.attackerItem = attacker.item;
   }
 
-  if ((move.named('Facade') && attacker.hasStatus('brn', 'par', 'psn', 'tox')) ||
+  if ((move.named('Facade') && attacker.hasStatus('brn', 'par', 'psn', 'tox', 'fst', 'blt')) ||
       (move.named('Brine') && defender.curHP() <= defender.maxHP() / 2) ||
-      (move.named('Venoshock') && defender.hasStatus('psn', 'tox'))) {
+      (move.named('Venoshock') && defender.hasStatus('psn', 'tox', 'blt'))) {
     bpMods.push(8192);
     desc.moveBP = basePower * 2;
   } else if (gen.num > 5 && move.named('Knock Off') && !resistedKnockOffDamage) {
     bpMods.push(6144);
     desc.moveBP = basePower * 1.5;
-  } else if (move.named('Solar Beam') && field.hasWeather('Rain', 'Heavy Rain', 'Sand', 'Hail')) {
+  } else if (move.named('Solar Beam') && (field.hasClimateWeather('Rain', 'Primordial Sea', 'Hail') || field.hasIrritantWeather('Sand'))) {
     bpMods.push(2048);
     desc.moveBP = basePower / 2;
-    desc.weather = field.weather;
+    if (field.hasIrritantWeather('Sand')) desc.irritantWeather = field.irritantWeather;
+    else desc.climateWeather = field.climateWeather;
   }
 
   if (field.attackerSide.isHelpingHand) {
@@ -871,16 +873,16 @@ export function calculateAtModsBWXY(
     desc.attackerAbility = 'Flash Fire';
   } else if (
     (attacker.hasAbility('Solar Power') &&
-     field.hasWeather('Sun', 'Harsh Sunshine') &&
+     field.hasClimateWeather('Sun', 'Desolate Land') &&
      move.category === 'Special') ||
-    (attacker.named('Cherrim') &&
+    (attacker.named('Cherrim', 'Cherrim-Sunshine') &&
      attacker.hasAbility('Flower Gift') &&
-     field.hasWeather('Sun', 'Harsh Sunshine') &&
+     field.hasClimateWeather('Sun', 'Desolate Land') &&
      move.category === 'Physical')
   ) {
     atMods.push(6144);
     desc.attackerAbility = attacker.ability;
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
   } else if (
     (attacker.hasAbility('Defeatist') && attacker.curHP() <= attacker.maxHP() / 2) ||
     (attacker.hasAbility('Slow Start') && attacker.abilityOn && move.category === 'Physical')
@@ -895,10 +897,10 @@ export function calculateAtModsBWXY(
   if (
     field.attackerSide.isFlowerGift &&
     !attacker.hasAbility('Flower Gift') &&
-    field.hasWeather('Sun', 'Harsh Sunshine') &&
+    field.hasClimateWeather('Sun', 'Desolate Land') &&
     move.category === 'Physical') {
     atMods.push(6144);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
     desc.isFlowerGiftAttacker = true;
   }
 
@@ -958,9 +960,10 @@ export function calculateDefenseBWXY(
   }
 
   // unlike all other defense modifiers, Sandstorm SpD boost gets applied directly
-  if (field.hasWeather('Sand') && defender.hasType('Rock') && !hitsPhysical) {
+  if (field.hasIrritantWeather('Sand') && defender.hasType('Rock') && !hitsPhysical &&
+      !defender.hasItem('Safety Goggles')) {
     defense = pokeRound((defense * 3) / 2);
-    desc.weather = field.weather;
+    desc.irritantWeather = field.irritantWeather;
   }
 
   const dfMods = calculateDfModsBWXY(
@@ -986,20 +989,20 @@ export function calculateDfModsBWXY(
     dfMods.push(6144);
     desc.defenderAbility = defender.ability;
   } else if (
-    defender.named('Cherrim') &&
+    defender.named('Cherrim', 'Cherrim-Sunshine') &&
     defender.hasAbility('Flower Gift') &&
-    field.hasWeather('Sun', 'Harsh Sunshine') &&
+    field.hasClimateWeather('Sun', 'Desolate Land') &&
     !hitsPhysical
   ) {
     dfMods.push(6144);
     desc.defenderAbility = defender.ability;
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
   } else if (
     field.defenderSide.isFlowerGift &&
-    field.hasWeather('Sun', 'Harsh Sunshine') &&
+    field.hasClimateWeather('Sun', 'Desolate Land') &&
     !hitsPhysical) {
     dfMods.push(6144);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
     desc.isFlowerGiftDefender = true;
   }
 
@@ -1053,16 +1056,16 @@ function calculateBaseDamageBWXY(
     baseDamage = pokeRound(OF32(baseDamage * 2048) / 4096);
   }
 
-  if ((field.hasWeather('Sun', 'Harsh Sunshine') && move.hasType('Fire')) ||
-      (field.hasWeather('Rain', 'Heavy Rain') && move.hasType('Water'))) {
+  if ((field.hasClimateWeather('Sun', 'Desolate Land') && move.hasType('Fire')) ||
+      (field.hasClimateWeather('Rain', 'Primordial Sea') && move.hasType('Water'))) {
     baseDamage = pokeRound(OF32(baseDamage * 6144) / 4096);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
   } else if (
-    (field.hasWeather('Sun') && move.hasType('Water')) ||
-    (field.hasWeather('Rain') && move.hasType('Fire'))
+    (field.hasClimateWeather('Sun') && move.hasType('Water')) ||
+    (field.hasClimateWeather('Rain') && move.hasType('Fire'))
   ) {
     baseDamage = pokeRound(OF32(baseDamage * 2048) / 4096);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
   }
 
   if (isCritical) {

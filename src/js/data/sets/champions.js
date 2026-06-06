@@ -224,10 +224,10 @@ var SETDEX_CHAMPIONS = {
     "SM 1v1 Taunt + 3 Attacks": {"ability":"Sturdy","item":"Steelixite","nature":"Adamant","moves":["Taunt","Earthquake","Rock Blast","Heavy Slam"],"sps":{"hp":29,"at":20,"sd":15}}
   },
   "Steelix-Mega": {
-    "SM UU Offensive Stealth Rock": {"ability":"Sand Force","item":"Steelixite","nature":"Brave","moves":["Stealth Rock","Gyro Ball","Earthquake","Curse"],"sps":{"hp":32,"at":26,"sd":6}},
-    "SM Monotype Curse (Ground)": {"ability":"Sand Force","item":"Steelixite","nature":"Impish","moves":["Curse","Heavy Slam","Rest","Sleep Talk"],"sps":{"hp":32,"at":1,"sd":32}},
-    "SM 1v1 Stallbreaker": {"ability":"Sand Force","item":"Steelixite","nature":"Adamant","moves":["Taunt","Bulldoze","Rest","Heavy Slam"],"sps":{"at":29,"sd":6,"sp":29}},
-    "SM 1v1 Taunt + 3 Attacks": {"ability":"Sand Force","item":"Steelixite","nature":"Adamant","moves":["Taunt","Earthquake","Rock Blast","Heavy Slam"],"sps":{"hp":29,"at":20,"sd":15}}
+    "SM UU Offensive Stealth Rock": {"ability":"Earth Force","item":"Steelixite","nature":"Brave","moves":["Stealth Rock","Gyro Ball","Earthquake","Curse"],"sps":{"hp":32,"at":26,"sd":6}},
+    "SM Monotype Curse (Ground)": {"ability":"Earth Force","item":"Steelixite","nature":"Impish","moves":["Curse","Heavy Slam","Rest","Sleep Talk"],"sps":{"hp":32,"at":1,"sd":32}},
+    "SM 1v1 Stallbreaker": {"ability":"Earth Force","item":"Steelixite","nature":"Adamant","moves":["Taunt","Bulldoze","Rest","Heavy Slam"],"sps":{"at":29,"sd":6,"sp":29}},
+    "SM 1v1 Taunt + 3 Attacks": {"ability":"Earth Force","item":"Steelixite","nature":"Adamant","moves":["Taunt","Earthquake","Rock Blast","Heavy Slam"],"sps":{"hp":29,"at":20,"sd":15}}
   },
   "Scizor": {
     "SM OU Swords Dance": {"ability":"Light Metal","item":"Scizorite","nature":"Impish","moves":["Swords Dance","Roost","Bullet Punch","U-turn"],"sps":{"hp":31,"df":2,"sd":31}},
@@ -418,10 +418,10 @@ var SETDEX_CHAMPIONS = {
     "SM Battle Spot Doubles Showdown Usage": {"ability":"Sand Veil","item":"Garchompite","nature":"Adamant","moves":["Earthquake","Rock Slide","Protect","Swords Dance"],"sps":{"hp":7,"at":32,"df":1,"sd":1,"sp":25}}
   },
   "Garchomp-Mega": {
-    "SM OU Mixed Mega": {"ability":"Sand Force","item":"Garchompite","nature":"Hasty","moves":["Draco Meteor","Earthquake","Fire Blast","Stealth Rock"],"sps":{"at":1,"sa":32,"sp":32}},
-    "SM OU Swords Dance Mega": {"ability":"Sand Force","item":"Garchompite","nature":"Jolly","moves":["Swords Dance","Substitute","Earthquake","Stone Edge"],"sps":{"at":32,"sd":1,"sp":32}},
-    "SM Monotype Mixed Wallbreaker (Ground)": {"ability":"Sand Force","item":"Garchompite","nature":"Naive","moves":["Draco Meteor","Earthquake","Fire Blast","Stone Edge"],"sps":{"at":1,"sa":32,"sp":32}},
-    "SM Battle Spot Doubles Showdown Usage": {"ability":"Sand Force","item":"Garchompite","nature":"Adamant","moves":["Earthquake","Rock Slide","Protect","Swords Dance"],"sps":{"hp":7,"at":32,"df":1,"sd":1,"sp":25}}
+    "SM OU Mixed Mega": {"ability":"Earth Force","item":"Garchompite","nature":"Hasty","moves":["Draco Meteor","Earthquake","Fire Blast","Stealth Rock"],"sps":{"at":1,"sa":32,"sp":32}},
+    "SM OU Swords Dance Mega": {"ability":"Earth Force","item":"Garchompite","nature":"Jolly","moves":["Swords Dance","Substitute","Earthquake","Stone Edge"],"sps":{"at":32,"sd":1,"sp":32}},
+    "SM Monotype Mixed Wallbreaker (Ground)": {"ability":"Earth Force","item":"Garchompite","nature":"Naive","moves":["Draco Meteor","Earthquake","Fire Blast","Stone Edge"],"sps":{"at":1,"sa":32,"sp":32}},
+    "SM Battle Spot Doubles Showdown Usage": {"ability":"Earth Force","item":"Garchompite","nature":"Adamant","moves":["Earthquake","Rock Slide","Protect","Swords Dance"],"sps":{"hp":7,"at":32,"df":1,"sd":1,"sp":25}}
   },
   "Lucario": {
     "SM Ubers Swords Dance": {"ability":"Justified","item":"Lucarionite","nature":"Jolly","moves":["Swords Dance","Meteor Mash","Close Combat","Bullet Punch"],"sps":{"at":32,"sd":1,"sp":32}},

@@ -3,12 +3,11 @@ import type {
   ID,
   ItemName,
   MoveCategory,
-  NatureName,
   StatID,
   StatsTable,
   Terrain,
   TypeName,
-  Weather,
+  ClimateWeather,
 } from '../data/interface';
 import {toID} from '../util';
 import type {Field, Side} from '../field';
@@ -28,6 +27,10 @@ const EV_ITEMS = [
 ];
 
 export function isGrounded(pokemon: Pokemon, field: Field) {
+  if (field.hasEnergyWeather('Magnetosphere') && pokemon.hasType('Steel') &&
+      !pokemon.hasItem('Energy Nullifier') && !field.isGravity && !pokemon.hasItem('Iron Ball')) {
+    return false;
+  }
   return (field.isGravity || pokemon.hasItem('Iron Ball') ||
     (!pokemon.hasType('Flying') &&
       !pokemon.hasAbility('Levitate') &&
@@ -90,7 +93,6 @@ export function computeFinalStats(
 }
 
 export function getFinalSpeed(gen: Generation, pokemon: Pokemon, field: Field, side: Side) {
-  const weather = field.weather || '';
   const terrain = field.terrain;
   let speed = getModifiedStat(pokemon.rawStats.spe, pokemon.boosts.spe, gen);
   const speedMods = [];
@@ -99,12 +101,30 @@ export function getFinalSpeed(gen: Generation, pokemon: Pokemon, field: Field, s
   // Pledge swamp would get applied here when implemented
   // speedMods.push(1024);
 
+  if (field.hasIrritantWeather('Dust') && pokemon.hasType('Ground') && !pokemon.hasItem('Safety Goggles')) {
+    speedMods.push(5120);
+  }
+  if (field.hasIrritantWeather('Pheromones') && !pokemon.hasItem('Safety Goggles') &&
+      (pokemon.hasType('Bug') || pokemon.hasType('Poison'))) {
+    speedMods.push(6144);
+  }
+  if (field.hasEnergyWeather('Thunderstorm') && !pokemon.hasItem('Energy Nullifier') &&
+      pokemon.hasType('Electric')) {
+    speedMods.push(6144);
+  }
+  if (field.hasClearingWeather('Strong Winds') && !isGrounded(pokemon, field)) {
+    speedMods.push(5120);
+  }
+
   if ((pokemon.hasAbility('Unburden') && pokemon.abilityOn) ||
-      (pokemon.hasAbility('Chlorophyll') && weather.includes('Sun')) ||
-      (pokemon.hasAbility('Sand Rush') && weather === 'Sand') ||
-      (pokemon.hasAbility('Swift Swim') && weather.includes('Rain')) ||
-      (pokemon.hasAbility('Slush Rush') && ['Hail', 'Snow'].includes(weather)) ||
-      (pokemon.hasAbility('Surge Surfer') && terrain === 'Electric')
+      (pokemon.hasAbility('Chlorophyll') && field.hasClimateWeather('Sun', 'Desolate Land')) ||
+      (pokemon.hasAbility('Sand Rush') && field.hasIrritantWeather('Sand')) ||
+      (pokemon.hasAbility('Swift Swim') && field.hasClimateWeather('Rain', 'Primordial Sea')) ||
+      (pokemon.hasAbility('Slush Rush') && field.hasClimateWeather('Hail', 'Snow')) ||
+      (pokemon.hasAbility('Shadow Step') && (field.hasClimateWeather('Blood Moon') || field.hasEnergyWeather('Paranormal Activity'))) ||
+      (pokemon.hasAbility('Energizer') && field.hasEnergyWeather('Thunderstorm') && !pokemon.hasItem('Energy Nullifier')) ||
+      (pokemon.hasAbility('Surge Surfer') && (terrain === 'Electric' || field.hasEnergyWeather('Thunderstorm'))) ||
+      (pokemon.hasAbility('Magnapult') && field.hasEnergyWeather('Magnetosphere') && !pokemon.hasItem('Energy Nullifier'))
   ) {
     speedMods.push(8192);
   } else if (pokemon.hasAbility('Quick Feet') && pokemon.status) {
@@ -167,35 +187,69 @@ export function getMoveEffectiveness(
 
 export function checkAirLock(pokemon: Pokemon, field: Field) {
   if (pokemon.hasAbility('Air Lock', 'Cloud Nine')) {
-    field.weather = undefined;
+    field.climateWeather = undefined;
+  }
+}
+
+export function checkNullify(pokemon: Pokemon, field: Field) {
+  if (pokemon.hasAbility('Nullify', 'Neutralize')) {
+    field.climateWeather = undefined;
+    field.irritantWeather = undefined;
+    field.energyWeather = undefined;
+    field.clearingWeather = undefined;
+    field.cataclysmWeather = undefined;
   }
 }
 
 export function checkTeraformZero(pokemon: Pokemon, field: Field) {
   if (pokemon.hasAbility('Teraform Zero') && pokemon.abilityOn) {
-    field.weather = undefined;
+    field.climateWeather = undefined;
+    field.irritantWeather = undefined;
+    field.energyWeather = undefined;
+    field.clearingWeather = undefined;
+    field.cataclysmWeather = undefined;
     field.terrain = undefined;
   }
 }
 
-export function checkForecast(pokemon: Pokemon, weather?: Weather) {
-  if (pokemon.hasAbility('Forecast') && pokemon.named('Castform')) {
-    switch (weather) {
-    case 'Sun':
-    case 'Harsh Sunshine':
-      pokemon.types = ['Fire'];
-      break;
-    case 'Rain':
-    case 'Heavy Rain':
-      pokemon.types = ['Water'];
-      break;
-    case 'Hail':
-    case 'Snow':
-      pokemon.types = ['Ice'];
-      break;
-    default:
-      pokemon.types = ['Normal'];
-    }
+export function checkForecast(pokemon: Pokemon, field: Field) {
+  if (!pokemon.hasAbility('Forecast') || !pokemon.named('Castform')) return;
+  if (field.hasClimateWeather('Sun', 'Desolate Land')) {
+    pokemon.types = ['Fire'];
+  } else if (field.hasClimateWeather('Rain', 'Primordial Sea')) {
+    pokemon.types = ['Water'];
+  } else if (field.hasClimateWeather('Hail', 'Snow')) {
+    pokemon.types = ['Ice'];
+  } else if (field.hasClimateWeather('Blood Moon')) {
+    pokemon.types = ['Dark'];
+  } else if (field.hasIrritantWeather('Sand')) {
+    pokemon.types = ['Rock'];
+  } else if (field.hasIrritantWeather('Dust')) {
+    pokemon.types = ['Ground'];
+  } else if (field.hasIrritantWeather('Pollen')) {
+    pokemon.types = ['Grass'];
+  } else if (field.hasIrritantWeather('Pheromones')) {
+    pokemon.types = ['Bug'];
+  } else if (field.hasIrritantWeather('Smog')) {
+    pokemon.types = ['Poison'];
+  } else if (field.hasIrritantWeather('Fairy Dust')) {
+    pokemon.types = ['Fairy'];
+  } else if (field.hasEnergyWeather('Battle Aura')) {
+    pokemon.types = ['Fighting'];
+  } else if (field.hasEnergyWeather('Paranormal Activity')) {
+    pokemon.types = ['Ghost'];
+  } else if (field.hasEnergyWeather('Dreamscape')) {
+    pokemon.types = ['Psychic'];
+  } else if (field.hasEnergyWeather('Dragon Force')) {
+    pokemon.types = ['Dragon'];
+  } else if (field.hasEnergyWeather('Thunderstorm')) {
+    pokemon.types = ['Electric'];
+  } else if (field.hasEnergyWeather('Magnetosphere')) {
+    pokemon.types = ['Steel'];
+  } else if (field.hasClearingWeather('Strong Winds', 'Delta Stream')) {
+    pokemon.types = ['Flying'];
+  } else {
+    pokemon.types = ['Normal'];
   }
 }
 
@@ -272,8 +326,8 @@ export function checkDauntlessShield(source: Pokemon, gen: Generation) {
   }
 }
 
-export function checkWindRider(source: Pokemon, attackingSide: Side) {
-  if (source.hasAbility('Wind Rider') && attackingSide.isTailwind) {
+export function checkWindRider(source: Pokemon, attackingSide: Side, field: Field) {
+  if (source.hasAbility('Wind Rider') && (attackingSide.isTailwind || field.hasClearingWeather('Strong Winds'))) {
     source.boosts.atk = Math.min(6, source.boosts.atk + 1);
   }
 }
@@ -388,7 +442,7 @@ export function checkMultihitBoost(
     field.terrain = 'Grassy';
   }
   if (defender.hasAbility('Sand Spit')) {
-    field.weather = 'Sand';
+    field.irritantWeather = 'Sand';
   }
 
   if (defender.hasAbility('Stamina')) {
@@ -525,14 +579,12 @@ export function isQPActive(
     return false;
   }
 
-  const weather = field.weather || '';
-  const terrain = field.terrain;
-
   return (
     (pokemon.hasAbility('Protosynthesis') &&
-      (weather.includes('Sun') || pokemon.hasItem('Booster Energy'))) ||
+      (field.hasClimateWeather('Sun', 'Desolate Land') || pokemon.hasItem('Booster Energy'))) ||
     (pokemon.hasAbility('Quark Drive') &&
-      (terrain === 'Electric' || pokemon.hasItem('Booster Energy'))) ||
+      (field.terrain === 'Electric' || pokemon.hasItem('Booster Energy'))) ||
+    (pokemon.hasAbility('Warp Mist') && (field.hasClimateWeather('Fog'))) ||
     (pokemon.boostedStat !== 'auto')
   );
 }

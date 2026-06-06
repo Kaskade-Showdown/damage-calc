@@ -208,6 +208,7 @@ function toggleMNM() {
 	autosetTerrain($("#p1 .ability").val(), 0);
 	autosetWeather($("#p2 .ability").val(), 0);
 	autosetTerrain($("#p2 .ability").val(), 0);
+	updateAllWeatherEffects();
 }
 
 var shouldUseTS = false;
@@ -339,11 +340,13 @@ function performCalculationsOM() {
 $("#p1 .item").bind("keyup change", function () {
 	autoUpdateStats("#p1");
 	autosetWeather($("#p1 .ability").val(), 0);
+	updateAllWeatherEffects();
 });
 
 $("#p2 .item").bind("keyup change", function () {
 	autoUpdateStats("#p2");
 	autosetWeather($("#p2 .ability").val(), 0);
+	updateAllWeatherEffects();
 });
 $(".om-trigger").prop("checked", false);
 $(".om-trigger").change();

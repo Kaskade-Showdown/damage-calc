@@ -32,8 +32,8 @@ export function calculateDPP(
 
   checkAirLock(attacker, field);
   checkAirLock(defender, field);
-  checkForecast(attacker, field.weather);
-  checkForecast(defender, field.weather);
+  checkForecast(attacker, field);
+  checkForecast(defender, field);
   checkItem(attacker);
   checkItem(defender);
   checkRawStatChanges(attacker, field.attackerSide.isPowerTrick);
@@ -92,12 +92,13 @@ export function calculateDPP(
 
   if (move.named('Weather Ball')) {
     move.type =
-      field.hasWeather('Sun') ? 'Fire'
-      : field.hasWeather('Rain') ? 'Water'
-      : field.hasWeather('Sand') ? 'Rock'
-      : field.hasWeather('Hail') ? 'Ice'
+      field.hasClimateWeather('Sun', 'Desolate Land') ? 'Fire'
+      : field.hasClimateWeather('Rain', 'Primordial Sea') ? 'Water'
+      : field.hasIrritantWeather('Sand') ? 'Rock'
+      : field.hasClimateWeather('Hail', 'Snow') ? 'Ice'
       : 'Normal';
-    desc.weather = field.weather;
+    if (move.type === 'Rock') desc.irritantWeather = field.irritantWeather;
+    else desc.climateWeather = field.climateWeather;
     desc.moveType = move.type;
   } else if (move.named('Judgment') && attacker.item && attacker.item.includes('Plate')) {
     move.type = getItemBoostType(attacker.item)!;
@@ -425,7 +426,7 @@ export function calculateBasePowerDPP(
     desc.moveBP = move.hits === 2 ? 30 : move.hits === 3 ? 60 : 10;
     break;
   case 'Weather Ball':
-    basePower = move.bp * (field.weather ? 2 : 1);
+    basePower = move.bp * (!!(field.climateWeather || field.irritantWeather || field.energyWeather) ? 2 : 1);
     desc.moveBP = basePower;
     break;
   default:
@@ -542,12 +543,12 @@ export function calculateAttackDPP(
   if (isPhysical && attacker.hasAbility('Pure Power', 'Huge Power')) {
     attack *= 2;
     desc.attackerAbility = attacker.ability;
-  } else if (field.hasWeather('Sun') &&
+  } else if (field.hasClimateWeather('Sun') &&
     (attacker.hasAbility(isPhysical ? 'Flower Gift' : 'Solar Power'))
   ) {
     attack = Math.floor(attack * 1.5);
     desc.attackerAbility = attacker.ability;
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
   } else if (
     (isPhysical &&
       (attacker.hasAbility('Hustle') || (attacker.hasAbility('Guts') && attacker.status)) ||
@@ -561,9 +562,9 @@ export function calculateAttackDPP(
   }
 
   if (field.attackerSide.isFlowerGift && !attacker.hasAbility('Flower Gift') &&
-    field.hasWeather('Sun') && isPhysical) {
+    field.hasClimateWeather('Sun') && isPhysical) {
     attack = Math.floor(attack * 1.5);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
     desc.isFlowerGiftAttacker = true;
   }
 
@@ -615,13 +616,13 @@ export function calculateDefenseDPP(
   if (defender.hasAbility('Marvel Scale') && defender.status && isPhysical) {
     defense = Math.floor(defense * 1.5);
     desc.defenderAbility = defender.ability;
-  } else if (defender.hasAbility('Flower Gift') && field.hasWeather('Sun') && !isPhysical) {
+  } else if (defender.hasAbility('Flower Gift') && field.hasClimateWeather('Sun') && !isPhysical) {
     defense = Math.floor(defense * 1.5);
     desc.defenderAbility = defender.ability;
-    desc.weather = field.weather;
-  } else if (field.defenderSide.isFlowerGift && field.hasWeather('Sun') && !isPhysical) {
+    desc.climateWeather = field.climateWeather;
+  } else if (field.defenderSide.isFlowerGift && field.hasClimateWeather('Sun') && !isPhysical) {
     defense = Math.floor(defense * 1.5);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
     desc.isFlowerGiftDefender = true;
   }
 
@@ -636,9 +637,10 @@ export function calculateDefenseDPP(
     desc.defenderItem = defender.item;
   }
 
-  if (field.hasWeather('Sand') && defender.hasType('Rock') && !isPhysical) {
+  if (field.hasIrritantWeather('Sand') && defender.hasType('Rock') && !isPhysical &&
+      !defender.hasItem('Safety Goggles')) {
     defense = Math.floor(defense * 1.5);
-    desc.weather = field.weather;
+    desc.irritantWeather = field.irritantWeather;
   }
 
   if (move.named('Explosion') || move.named('Self-Destruct')) {
@@ -676,17 +678,19 @@ function calculateFinalModsDPP(
     baseDamage = Math.floor((baseDamage * 3) / 4);
   }
 
-  if ((field.hasWeather('Sun') && move.hasType('Fire')) ||
-      (field.hasWeather('Rain') && move.hasType('Water'))) {
+  if ((field.hasClimateWeather('Sun', 'Desolate Land') && move.hasType('Fire')) ||
+      (field.hasClimateWeather('Rain', 'Primordial Sea') && move.hasType('Water'))) {
     baseDamage = Math.floor(baseDamage * 1.5);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
   } else if (
-    (field.hasWeather('Sun') && move.hasType('Water')) ||
-    (field.hasWeather('Rain') && move.hasType('Fire')) ||
-    (move.named('Solar Beam') && field.hasWeather('Rain', 'Sand', 'Hail'))
+    (field.hasClimateWeather('Sun') && move.hasType('Water')) ||
+    (field.hasClimateWeather('Rain') && move.hasType('Fire')) ||
+    (move.named('Solar Beam') && (field.hasClimateWeather('Rain', 'Primordial Sea', 'Hail', 'Snow') ||
+      field.hasIrritantWeather('Sand')))
   ) {
     baseDamage = Math.floor(baseDamage * 0.5);
-    desc.weather = field.weather;
+    if (field.hasIrritantWeather('Sand')) desc.irritantWeather = field.irritantWeather;
+    else desc.climateWeather = field.climateWeather;
   }
 
   if (attacker.hasAbility('Flash Fire') && attacker.abilityOn && move.hasType('Fire')) {

@@ -37,6 +37,8 @@ export class Pokemon implements State.Pokemon {
   originalCurHP: number;
   status: I.StatusName | '';
   toxicCounter: number;
+  blightCounter: number;
+  magnetizeBoosts: number;
 
   moves: I.MoveName[];
 
@@ -103,6 +105,8 @@ export class Pokemon implements State.Pokemon {
     this.originalCurHP = curHP && curHP <= this.rawStats.hp ? curHP : this.rawStats.hp;
     this.status = options.status || '';
     this.toxicCounter = options.toxicCounter || 0;
+    this.blightCounter = options.blightCounter || 0;
+    this.magnetizeBoosts = options.magnetizeBoosts || 0;
     this.moves = options.moves || [];
   }
 
@@ -177,6 +181,8 @@ export class Pokemon implements State.Pokemon {
       status: this.status,
       teraType: this.teraType,
       toxicCounter: this.toxicCounter,
+      blightCounter: this.blightCounter,
+      magnetizeBoosts: this.magnetizeBoosts,
       moves: this.moves.slice(),
       overrides: this.species,
     });

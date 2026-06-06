@@ -42,10 +42,12 @@ var HIDDEN_POWER_REGEX = /Hidden Power (\w*)/;
 
 var CALC_STATUS = {
 	'Healthy': '',
-	'Paralyzed': 'par',
+	'Burned': 'brn',
+	'Frostbitten': 'fst',
 	'Poisoned': 'psn',
 	'Badly Poisoned': 'tox',
-	'Burned': 'brn',
+	'Horribly Poisoned': 'blt',
+	'Paralyzed': 'par',
 	'Asleep': 'slp',
 	'Frozen': 'frz'
 };
@@ -283,7 +285,7 @@ $(".ability").bind("keyup change", function () {
 	checkRivalry(ability);
 
 	var boostedStat = $(this).closest(".poke-info").find(".boostedStat");
-	if (ability === "Protosynthesis" || ability === "Quark Drive") {
+	if (ability === "Protosynthesis" || ability === "Quark Drive" || ability === "Warp Mist") {
 		boostedStat.show();
 		autosetQP($(this).closest(".poke-info"));
 	} else {
@@ -301,7 +303,7 @@ $(".ability").bind("keyup change", function () {
 });
 
 function autosetQP(pokemon) {
-	var currentWeather = $("input:radio[name='weather']:checked").val();
+	var currentWeather = $("input:radio[name='climateWeather']:checked").val();
 	var currentTerrain = $("input:checkbox[name='terrain']:checked").val() || "No terrain";
 
 	var item = pokemon.find(".item").val();
@@ -312,7 +314,8 @@ function autosetQP(pokemon) {
 		if (
 			(item === "Booster Energy") ||
 			(ability === "Protosynthesis" && currentWeather === "Sun") ||
-			(ability === "Quark Drive" && currentTerrain === "Electric")
+			(ability === "Quark Drive" && currentTerrain === "Electric") ||
+			(ability === "Wrp Mist" && currentWeather === "Fog")
 		) {
 			pokemon.find(".boostedStat").val("auto");
 		} else {
@@ -325,24 +328,75 @@ $("#p1 .ability").bind("keyup change", function () {
 	autosetWeather($(this).val(), 0);
 	autosetTerrain($(this).val(), 0);
 	autosetQP($(this).closest(".poke-info"));
+	updateAllWeatherEffects();
 });
 
-$("input[name='weather']").change(function () {
+function updateMagnetizeBoostsVisibility(pokeInfo) {
+	var isMagnetosphere = $("input:radio[name='energyWeather']:checked").val() === 'Magnetosphere';
+	var type1 = pokeInfo.find(".type1").val();
+	var type2 = pokeInfo.find(".type2").val();
+	var isSteel = (type1 === 'Steel' || type2 === 'Steel');
+	var row = pokeInfo.find(".magnetize-boosts-row");
+	if (isMagnetosphere && isSteel) {
+		row.show();
+	} else {
+		row.hide();
+		pokeInfo.find(".magnetize-boosts").val("0");
+	}
+}
+
+function updateMagnetizeBoosts() {
+	$('.poke-info').each(function () {
+		updateMagnetizeBoostsVisibility($(this));
+	});
+}
+
+$("input[name='climateWeather']").change(function () {
+	updateEvergreenFormes();
+	updateForecastForme();
+	updateFlowerGiftForme();
+	updateWetAndDryFormes();
+});
+
+$("input[name='irritantWeather']").change(function () {
+	updateForecastForme();
+	updateSwarmingForme();
+	updateSWTerrain();
+	updateWetAndDryFormes();
+});
+
+$("input[name='energyWeather']").change(function () {
+	updateConsecrationForme();
+	updateForecastForme();
+	updateMagnetizeBoosts();
+	updatePowerPlumageForme();
+	updateSWTerrain();
+});
+
+$("input[name='clearingWeather']").change(function () {
 	var allPokemon = $('.poke-info');
 	allPokemon.each(function () {
 		autosetQP($(this));
 	});
+	updateForecastForme();
+	updateSWTerrain();
 });
 
 var lastManualWeather = "";
+var IRRITANT_WEATHERS = ["Sand", "Dust", "Pollen", "Pheromones", "Smog", "Fairy Dust"];
+var ENERGY_WEATHERS = ["Battle Aura", "Paranormal Activity", "Dreamscape", "Dragon Force", "Thunderstorm", "Magnetosphere"];
 var lastAutoWeather = ["", ""];
+var lastSWAutoTerrain = "";
 function autosetWeather(ability, i) {
 
 	if ($('.locked-weather').length) {
 		return;
 	}
 
-	var currentWeather = $("input:radio[name='weather']:checked").val();
+	var currentWeather = $("input:radio[name='climateWeather']:checked").val() ||
+		($("input:radio[name='irritantWeather']:checked").val() || '') ||
+		($("input:radio[name='energyWeather']:checked").val() || '') ||
+		($("input:radio[name='clearingWeather']:checked").val() || '');
 	if (lastAutoWeather.indexOf(currentWeather) === -1) {
 		lastManualWeather = currentWeather;
 		lastAutoWeather[1 - i] = "";
@@ -357,35 +411,111 @@ function autosetWeather(ability, i) {
 		lastAutoWeather[i] = "Rain";
 		$("#rain").prop("checked", true);
 		break;
+	case "Snow Warning":
+		lastAutoWeather[i] = "Snow";
+		$("#snow").prop("checked", true);
+		break;
+	case "Eventide":
+		lastAutoWeather[i] = "Blood Moon";
+		$("#bloodmoon").prop("checked", true);
+		break;
+	case "Condensation":
+		lastAutoWeather[i] = "Fog";
+		$("#fog").prop("checked", true);
+		break;
 	case "Sand Stream":
 		lastAutoWeather[i] = "Sand";
-		$("#sand").prop("checked", true);
+		$("input:radio[name='irritantWeather'][value='Sand']").prop("checked", true);
 		break;
-	case "Snow Warning":
-		if (gen >= 9) {
-			lastAutoWeather[i] = "Snow";
-			$("#snow").prop("checked", true);
-		} else {
-			lastAutoWeather[i] = "Hail";
-			$("#hail").prop("checked", true);
-		}
+	case "Dust Devil":
+		lastAutoWeather[i] = "Dust";
+		$("input:radio[name='irritantWeather'][value='Dust']").prop("checked", true);
+		break;
+	case "Hay Fever":
+	case "Arena Bloom":
+		lastAutoWeather[i] = "Pollen";
+		$("input:radio[name='irritantWeather'][value='Pollen']").prop("checked", true);
+		break;
+	case "Secretion":
+		lastAutoWeather[i] = "Pheromones";
+		$("input:radio[name='irritantWeather'][value='Pheromones']").prop("checked", true);
+		break;
+	case "Pollution":
+		lastAutoWeather[i] = "Smog";
+		$("input:radio[name='irritantWeather'][value='Smog']").prop("checked", true);
+		break;
+	case "Incantation":
+		lastAutoWeather[i] = "Fairy Dust";
+		$("input:radio[name='irritantWeather'][value='Fairy Dust']").prop("checked", true);
+		break;
+	case "Stand Off":
+		lastAutoWeather[i] = "Battle Aura";
+		$("input:radio[name='energyWeather'][value='Battle Aura']").prop("checked", true);
+		break;
+	case "Séance":
+	case "Arena Curse":
+		lastAutoWeather[i] = "Paranormal Activity";
+		$("input:radio[name='energyWeather'][value='Paranormal Activity']").prop("checked", true);
+		break;
+	case "Dreamer":
+		lastAutoWeather[i] = "Dreamscape";
+		$("input:radio[name='energyWeather'][value='Dreamscape']").prop("checked", true);
+		break;
+	case "Arcanum":
+		lastAutoWeather[i] = "Dragon Force";
+		$("input:radio[name='energyWeather'][value='Dragon Force']").prop("checked", true);
+		break;
+	case "Stormfront":
+	case "Relic Soul":
+		lastAutoWeather[i] = "Thunderstorm";
+		$("input:radio[name='energyWeather'][value='Thunderstorm']").prop("checked", true);
+		break;
+	case "Ferroflux":
+		lastAutoWeather[i] = "Magnetosphere";
+		$("input:radio[name='energyWeather'][value='Magnetosphere']").prop("checked", true);
+		break;
+	case "Galeforce":
+		lastAutoWeather[i] = "Strong Winds";
+		$("#strongWinds").prop("checked", true);
+		break;
+	case "Heat Haze":
+		lastAutoWeather[i] = "Strong Winds";
+		$("#strongWinds").prop("checked", true);
+		$("#sun").prop("checked", true);
+		break;
+	case "Ice Armor":
+		lastAutoWeather[i] = "Strong Winds";
+		$("#strongWinds").prop("checked", true);
+		$("#snow").prop("checked", true);
 		break;
 	case "Desolate Land":
-		lastAutoWeather[i] = "Harsh Sunshine";
-		$("#harsh-sunshine").prop("checked", true);
+		lastAutoWeather[i] = "Desolate Land";
+		$("#desolateLand").prop("checked", true);
 		break;
 	case "Primordial Sea":
-		lastAutoWeather[i] = "Heavy Rain";
-		$("#heavy-rain").prop("checked", true);
+		lastAutoWeather[i] = "Primordial Sea";
+		$("#primordialSea").prop("checked", true);
 		break;
 	case "Delta Stream":
-		lastAutoWeather[i] = "Strong Winds";
-		$("#strong-winds").prop("checked", true);
+		lastAutoWeather[i] = "Delta Stream";
+		$("#delta-stream").prop("checked", true);
 		break;
 	default:
 		lastAutoWeather[i] = "";
 		var newWeather = lastAutoWeather[1 - i] !== "" ? lastAutoWeather[1 - i] : "";
-		$("input:radio[name='weather'][value='" + newWeather + "']").prop("checked", true);
+		if (!newWeather) {
+			// nothing to restore
+		} else if (IRRITANT_WEATHERS.indexOf(newWeather) !== -1) {
+			$("input:radio[name='irritantWeather'][value='" + newWeather + "']").prop("checked", true);
+		} else if (ENERGY_WEATHERS.indexOf(newWeather) !== -1) {
+			$("input:radio[name='energyWeather'][value='" + newWeather + "']").prop("checked", true);
+		} else if (newWeather === 'Strong Winds') {
+			$("#strongWinds").prop("checked", true);
+		} else if (newWeather === 'Delta Stream') {
+			$("#delta-stream").prop("checked", true);
+		} else {
+			$("input:radio[name='climateWeather'][value='" + newWeather + "']").prop("checked", true);
+		}
 		break;
 	}
 }
@@ -436,12 +566,199 @@ function autosetTerrain(ability, i) {
 }
 
 
-$(".status").bind("keyup change", function () {
-	if ($(this).val() === 'Badly Poisoned') {
-		$(this).parent().children(".toxic-counter").show();
-	} else {
-		$(this).parent().children(".toxic-counter").hide();
+function updateSWTerrain() {
+	var isStrongWinds = $("input:radio[name='clearingWeather']:checked").val() === 'Strong Winds';
+	var irritant = $("input:radio[name='irritantWeather']:checked").val() || '';
+	var energy = $("input:radio[name='energyWeather']:checked").val() || '';
+
+	var targetTerrain = '';
+	if (isStrongWinds) {
+		if (irritant === 'Pollen') targetTerrain = 'Grassy';
+		else if (irritant === 'Fairy Dust') targetTerrain = 'Misty';
+		else if (energy === 'Dreamscape') targetTerrain = 'Psychic';
+		else if (energy === 'Thunderstorm') targetTerrain = 'Electric';
 	}
+
+	if (targetTerrain !== lastSWAutoTerrain) {
+		if (targetTerrain) {
+			$("#" + targetTerrain.toLowerCase()).prop("checked", true).trigger("change");
+		} else if (lastSWAutoTerrain) {
+			var currentTerrain = $("input:checkbox[name='terrain']:checked").val() || '';
+			if (currentTerrain === lastSWAutoTerrain) {
+				$("input:checkbox[name='terrain']").prop("checked", false);
+				$("#" + lastSWAutoTerrain.toLowerCase()).trigger("change");
+			}
+		}
+		lastSWAutoTerrain = targetTerrain;
+	}
+}
+
+function getCastformForme(climate, irritant, energy, clearing) {
+	if (climate === 'Sun' || climate === 'Desolate Land') return 'Castform-Sunny';
+	if (climate === 'Rain' || climate === 'Primordial Sea') return 'Castform-Rainy';
+	if (climate === 'Hail' || climate === 'Snow') return 'Castform-Snowy';
+	if (climate === 'Blood Moon') return 'Castform-Shady';
+	if (irritant === 'Sand') return 'Castform-Sandy';
+	if (irritant === 'Dust') return 'Castform-Dusty';
+	if (irritant === 'Pollen') return 'Castform-Allergy';
+	if (irritant === 'Pheromones') return 'Castform-Swarmy';
+	if (irritant === 'Smog') return 'Castform-Smoggy';
+	if (irritant === 'Fairy Dust') return 'Castform-Lovely';
+	if (energy === 'Battle Aura') return 'Castform-Gutsy';
+	if (energy === 'Paranormal Activity') return 'Castform-Spooky';
+	if (energy === 'Dreamscape') return 'Castform-Zenny';
+	if (energy === 'Dragon Force') return 'Castform-Sorcery';
+	if (energy === 'Thunderstorm') return 'Castform-Zappy';
+	if (clearing === 'Strong Winds') return 'Castform-Windy';
+	return 'Castform';
+}
+
+function updateForecastForme() {
+	var climate = $("input:radio[name='climateWeather']:checked").val() || '';
+	var irritant = $("input:radio[name='irritantWeather']:checked").val() || '';
+	var energy = $("input:radio[name='energyWeather']:checked").val() || '';
+	var clearing = $("input:radio[name='clearingWeather']:checked").val() || '';
+	var targetForme = getCastformForme(climate, irritant, energy, clearing);
+
+	$('.poke-info').each(function () {
+		if ($(this).find('.ability').val() !== 'Forecast') return;
+		var formeSelect = $(this).find('.forme');
+		if (!formeSelect.length || !formeSelect.parent().is(':visible')) return;
+		var curForme = formeSelect.val();
+		if (curForme === targetForme) return;
+		if ($(this).find('.item').val() === 'Weather Vane' && curForme !== 'Castform') return;
+		formeSelect.val(targetForme).change();
+	});
+}
+
+function updateFlowerGiftForme() {
+	var climate = $("input:radio[name='climateWeather']:checked").val() || '';
+	var isSun = climate === 'Sun' || climate === 'Desolate Land';
+
+	$('.poke-info').each(function () {
+		if ($(this).find('.ability').val() !== 'Flower Gift') return;
+		var formeSelect = $(this).find('.forme');
+		if (!formeSelect.length || !formeSelect.parent().is(':visible')) return;
+		var curForme = formeSelect.val();
+		if (isSun && curForme !== 'Cherrim-Sunshine') {
+			formeSelect.val('Cherrim-Sunshine').change();
+		} else if (!isSun && curForme === 'Cherrim-Sunshine') {
+			if ($(this).find('.item').val() === 'Weather Vane') return;
+			formeSelect.val('Cherrim').change();
+		}
+	});
+}
+
+function updateEvergreenFormes() {
+	var climate = $("input:radio[name='climateWeather']:checked").val() || '';
+	$('.poke-info').each(function () {
+		if ($(this).find('.ability').val() !== 'Evergreen') return;
+		var formeSelect = $(this).find('.forme');
+		if (!formeSelect.length || !formeSelect.parent().is(':visible')) return;
+		var curForme = formeSelect.val();
+		if (climate === 'Sun' || climate === 'Desolate Land') {
+			if (curForme === 'Snover') formeSelect.val('Snover-Lowland').change();
+			else if (curForme === 'Abomasnow') formeSelect.val('Abomasnow-Lowland').change();
+		} else if (climate === 'Snow' || climate === 'Hail') {
+			if (curForme === 'Snover-Lowland' || curForme === 'Abomasnow-Lowland') {
+				if ($(this).find('.item').val() === 'Weather Vane') return;
+				formeSelect.val(curForme === 'Snover-Lowland' ? 'Snover' : 'Abomasnow').change();
+			}
+		}
+	});
+}
+
+function updateSwarmingForme() {
+	var isPheromones = ($("input:radio[name='irritantWeather']:checked").val() || '') === 'Pheromones';
+
+	$('.poke-info').each(function () {
+		if ($(this).find('.ability').val() !== 'Swarming') return;
+		var formeSelect = $(this).find('.forme');
+		if (!formeSelect.length || !formeSelect.parent().is(':visible')) return;
+		var curForme = formeSelect.val();
+		if (isPheromones && curForme !== 'Eecroach-Swarm') {
+			formeSelect.val('Eecroach-Swarm').change();
+		} else if (!isPheromones && curForme === 'Eecroach-Swarm') {
+			if ($(this).find('.item').val() === 'Weather Vane') return;
+			formeSelect.val('Eecroach').change();
+		}
+	});
+}
+
+function updatePowerPlumageForme() {
+	var isThunderstorm = ($("input:radio[name='energyWeather']:checked").val() || '') === 'Thunderstorm';
+
+	$('.poke-info').each(function () {
+		if ($(this).find('.ability').val() !== 'Power Plumage') return;
+		var formeSelect = $(this).find('.forme');
+		if (!formeSelect.length || !formeSelect.parent().is(':visible')) return;
+		var curForme = formeSelect.val();
+		if (isThunderstorm && curForme !== 'Blurrun-Charged') {
+			formeSelect.val('Blurrun-Charged').change();
+		} else if (!isThunderstorm && curForme === 'Blurrun-Charged') {
+			if ($(this).find('.item').val() === 'Weather Vane') return;
+			formeSelect.val('Blurrun').change();
+		}
+	});
+}
+
+function updateWetAndDryFormes() {
+	var climate = $("input:radio[name='climateWeather']:checked").val() || '';
+	var irritant = $("input:radio[name='irritantWeather']:checked").val() || '';
+	var isDry = climate === 'Sun' || climate === 'Desolate Land' || irritant === 'Sand' || irritant === 'Dust';
+	var isWet = !isDry && (climate === 'Rain' || climate === 'Primordial Sea' ||
+		climate === 'Hail' || climate === 'Snow' || climate === 'Fog');
+
+	$('.poke-info').each(function () {
+		if ($(this).find('.ability').val() !== 'Wet and Dry') return;
+		var formeSelect = $(this).find('.forme');
+		if (!formeSelect.length || !formeSelect.parent().is(':visible')) return;
+		var curForme = formeSelect.val();
+		if (curForme !== 'Drout' && curForme !== 'Drout-Dry') return;
+		if (isDry && curForme !== 'Drout-Dry') {
+			formeSelect.val('Drout-Dry').change();
+		} else if (isWet && curForme !== 'Drout') {
+			if ($(this).find('.item').val() === 'Weather Vane') return;
+			formeSelect.val('Drout').change();
+		}
+	});
+}
+
+function updateConsecrationForme() {
+	var energy = $("input:radio[name='energyWeather']:checked").val() || '';
+	var isAwakened = energy === 'Paranormal Activity' || energy === 'Dreamscape';
+
+	$('.poke-info').each(function () {
+		if ($(this).find('.ability').val() !== 'Consecration') return;
+		var item = $(this).find('.item').val();
+		var formeSelect = $(this).find('.forme');
+		if (!formeSelect.length || !formeSelect.parent().is(':visible')) return;
+		var curForme = formeSelect.val();
+		if (isAwakened && curForme !== 'Bearvoyance-Awakened') {
+			if (item !== 'Thick Club') return;
+			formeSelect.val('Bearvoyance-Awakened').change();
+		} else if (!isAwakened && curForme === 'Bearvoyance-Awakened') {
+			if (item === 'Weather Vane') return;
+			formeSelect.val('Bearvoyance').change();
+		}
+	});
+}
+
+function updateAllWeatherEffects() {
+	updateConsecrationForme();
+	updateEvergreenFormes();
+	updateFlowerGiftForme();
+	updateForecastForme();
+	updatePowerPlumageForme();
+	updateSwarmingForme();
+	updateSWTerrain();
+	updateWetAndDryFormes();
+}
+
+$(".status").bind("keyup change", function () {
+	var val = $(this).val();
+	$(this).parent().children(".toxic-counter").toggle(val === 'Badly Poisoned');
+	$(this).parent().children(".blight-counter").toggle(val === 'Horribly Poisoned');
 });
 
 $(".teraType").change(function () {
@@ -581,6 +898,7 @@ $(".item").change(function () {
 	}
 
 	autosetQP(pokeObj);
+	updateAllWeatherEffects();
 	pokeObj.find('.item').attr('data-prev', itemName);
 });
 
@@ -949,6 +1267,7 @@ $(".forme").change(function () {
 	var chosenSet = isRandoms && gen < 8 ? pokemonSets : pokemonSets && pokemonSets[setName];
 	var greninjaSet = $(this).val().indexOf("Greninja") !== -1;
 	var isAltForme = $(this).val() !== pokemonName;
+	var prevAbility = container.find(".ability").val();
 	if (isAltForme && abilities.indexOf(altForme.abilities[0]) !== -1 && !greninjaSet) {
 		container.find(".ability").val(altForme.abilities[0]);
 	} else if (!isAltForme && abilities.indexOf(altForme.abilities[0]) !== -1 && !greninjaSet) {
@@ -970,7 +1289,9 @@ $(".forme").change(function () {
 	if (forcedTeraType) {
 		$(this).parent().siblings().find(".teraType").val(forcedTeraType);
 	}
-	container.find(".ability").keyup();
+	if (container.find(".ability").val() !== prevAbility) {
+		container.find(".ability").keyup();
+	}
 	if (startsWith($(this).val(), "Ogerpon-") && !startsWith($(this).val(), "Ogerpon-Teal")) {
 		container.find(".item").val($(this).val().split("-")[1] + " Mask").keyup();
 	} else {
@@ -1153,6 +1474,8 @@ function createPokemon(pokeInfo) {
 			curHP: curHP,
 			status: CALC_STATUS[pokeInfo.find(".status").val()],
 			toxicCounter: pokeInfo.find(".status").val() === 'Badly Poisoned' ? ~~pokeInfo.find(".toxic-counter").val() : 0,
+			blightCounter: pokeInfo.find(".status").val() === 'Horribly Poisoned' ? ~~pokeInfo.find(".blight-counter").val() : 0,
+			magnetizeBoosts: parseInt(pokeInfo.find(".magnetize-boosts").val()) || 0,
 			moves: [
 				getMoveDetails(pokeInfo.find(".move1"), opts),
 				getMoveDetails(pokeInfo.find(".move2"), opts),
@@ -1233,21 +1556,27 @@ function createField() {
 	var isWonderRoom = $("#wonderroom").prop("checked");
 	var isGravity = $("#gravity").prop("checked");
 	var isSR = [$("#srL").prop("checked"), $("#srR").prop("checked")];
-	var weather;
+	var climateWeather;
 	var spikes;
 	if (gen === 2) {
 		spikes = [$("#gscSpikesL").prop("checked") ? 1 : 0, $("#gscSpikesR").prop("checked") ? 1 : 0];
-		weather = $("input:radio[name='gscWeather']:checked").val();
+		climateWeather = $("input:radio[name='gscWeather']:checked").val();
 	} else {
-		weather = $("input:radio[name='weather']:checked").val();
+		climateWeather = $("input:radio[name='climateWeather']:checked").val() || '';
 		spikes = [~~$("input:radio[name='spikesL']:checked").val(), ~~$("input:radio[name='spikesR']:checked").val()];
 	}
 	var steelsurge = [$("#steelsurgeL").prop("checked"), $("#steelsurgeR").prop("checked")];
+	var isSteelBarbs = [$("#steelBarbsL").prop("checked"), $("#steelBarbsR").prop("checked")];
 	var vinelash = [$("#vinelashL").prop("checked"), $("#vinelashR").prop("checked")];
 	var wildfire = [$("#wildfireL").prop("checked"), $("#wildfireR").prop("checked")];
 	var cannonade = [$("#cannonadeL").prop("checked"), $("#cannonadeR").prop("checked")];
 	var volcalith = [$("#volcalithL").prop("checked"), $("#volcalithR").prop("checked")];
 	var terrain = ($("input:checkbox[name='terrain']:checked").val()) ? $("input:checkbox[name='terrain']:checked").val() : "";
+	var irritantWeather = $("input:radio[name='irritantWeather']:checked").val() || "";
+	var energyWeather = $("input:radio[name='energyWeather']:checked").val() || "";
+	var clearingWeather = $("input:radio[name='clearingWeather']:checked").val() || '';
+	var isWeatherBoosted = clearingWeather === 'Strong Winds';
+	var cataclysmWeather = $("#ultraRadiance").prop("checked") ? 'Ultra Radiance' : '';
 	var isReflect = [$("#reflectL").prop("checked"), $("#reflectR").prop("checked")];
 	var isLightScreen = [$("#lightScreenL").prop("checked"), $("#lightScreenR").prop("checked")];
 	var isProtected = [$("#protectL").prop("checked"), $("#protectR").prop("checked")];
@@ -1271,6 +1600,7 @@ function createField() {
 			spikes: spikes[i],
 			isSR: isSR[i],
 			steelsurge: steelsurge[i],
+			isSteelBarbs: isSteelBarbs[i],
 			vinelash: vinelash[i],
 			wildfire: wildfire[i],
 			cannonade: cannonade[i],
@@ -1296,11 +1626,16 @@ function createField() {
 	return new calc.Field({
 		gameType: gameType,
 		terrain: terrain,
+		climateWeather: climateWeather,
+		irritantWeather: irritantWeather,
+		energyWeather: energyWeather,
+		clearingWeather: clearingWeather,
+		cataclysmWeather: cataclysmWeather,
+		isWeatherBoosted: isWeatherBoosted,
 		isBeadsOfRuin: isBeadsOfRuin,
 		isTabletsOfRuin: isTabletsOfRuin,
 		isSwordOfRuin: isSwordOfRuin,
 		isVesselOfRuin: isVesselOfRuin,
-		weather: weather,
 		isMagicRoom: isMagicRoom,
 		isWonderRoom: isWonderRoom,
 		isGravity: isGravity,
@@ -1450,9 +1785,11 @@ var GEN8RANDSETS = formatRandSets({
 });
 
 var GEN9RANDSETS = formatRandSets({
-	"Randoms": typeof GEN9RANDOMBATTLE === 'undefined' ? {} : GEN9RANDOMBATTLE,
-	"Doubles Randoms": typeof GEN9RANDOMDOUBLESBATTLE === 'undefined' ? {} : GEN9RANDOMDOUBLESBATTLE,
-	"Baby Randoms": typeof GEN9BABYRANDOMBATTLE === 'undefined' ? {} : GEN9BABYRANDOMBATTLE,
+	"Randoms": typeof GEN9SWSERANDOMBATTLE === 'undefined' ? {} : GEN9SWSERANDOMBATTLE,
+	"Doubles Randoms": typeof GEN9SWSERANDOMDOUBLESBATTLE === 'undefined' ? {} : GEN9SWSERANDOMDOUBLESBATTLE,
+	"Baby Randoms": typeof GEN9SWSEBABYRANDOMBATTLE === 'undefined' ? {} : GEN9SWSEBABYRANDOMBATTLE,
+	"FFA Randoms": typeof GEN9SWSEFFARANDOMBATTLE === 'undefined' ? {} : GEN9SWSEFFARANDOMBATTLE,
+	"CAP Randoms": typeof GEN9SWSECAPRANDOMBATTLE === 'undefined' ? {} : GEN9SWSECAPRANDOMBATTLE,
 });
 
 var RANDDEX = [
@@ -1505,6 +1842,7 @@ $(".gen").change(function () {
 	loadDefaultLists();
 	$(".gen-specific.g" + gen).show();
 	$(".gen-specific").not(".g" + gen).hide();
+	updateMagnetizeBoosts();
 	$("input:radio[name='format']").change();
 	var typeOptions = getSelectOptions(Object.keys(typeChart));
 	$("select.type1, select.move-type").find("option").remove().end().append(typeOptions);
@@ -1536,7 +1874,7 @@ $(".notation").change(function () {
 
 function clearField() {
 	$("#singles-format").prop("checked", true);
-	$("#clear").prop("checked", true);
+	$("#climateClear").prop("checked", true);
 	$("#gscClear").prop("checked", true);
 	$("#magicroom").prop("checked", false);
 	$("#wonderroom").prop("checked", false);
@@ -1549,6 +1887,8 @@ function clearField() {
 	$("#gscSpikesR").prop("checked", false);
 	$("#steelsurgeL").prop("checked", false);
 	$("#steelsurgeR").prop("checked", false);
+	$("#steelBarbsL").prop("checked", false);
+	$("#steelBarbsR").prop("checked", false);
 	$("#vinelashL").prop("checked", false);
 	$("#vinelashR").prop("checked", false);
 	$("#wildfireL").prop("checked", false);
@@ -1590,6 +1930,13 @@ function clearField() {
 	$("#switchingL").prop("checked", false);
 	$("#switchingR").prop("checked", false);
 	$("input:checkbox[name='terrain']").prop("checked", false);
+	$("#irritantClear").prop("checked", true);
+	$("#energyClear").prop("checked", true);
+	$("#clearingClear").prop("checked", true);
+	$("#ultraRadiance").prop("checked", false);
+	$("#climateClear").prop("checked", true);
+	lastSWAutoTerrain = '';
+	updateMagnetizeBoosts();
 }
 
 function getSetOptions(sets) {
@@ -1670,19 +2017,19 @@ function getSelectOptions(arr, sort, defaultOption) {
 
 var stickyWeather = (function () {
 	var lastClicked = '';
-	$(".weather").click(function () {
-		if (this.id === lastClicked) {
-			$(this).toggleClass("locked-weather");
+	$("input[name='climateWeather'], input[name='irritantWeather'], input[name='energyWeather'], input[name='clearingWeather']").click(function () {
+		var radioName = $(this).attr('name');
+		if (this.id === lastClicked && $(this).prop('checked')) {
+			$("input[name='" + radioName + "'][value='']:visible").prop('checked', true).trigger('change');
+			lastClicked = '';
 		} else {
-			$('.locked-weather').removeClass('locked-weather');
+			lastClicked = this.id;
 		}
-		lastClicked = this.id;
 	});
 
 	return {
 		clearStickyWeather: function () {
 			lastClicked = null;
-			$('.locked-weather').removeClass('locked-weather');
 		}
 	};
 })();
@@ -1915,6 +2262,9 @@ $(document).ready(function () {
 	$(".set-selector").val(getFirstValidSetOption().id);
 	$(".set-selector").change();
 	$(".terrain-trigger").bind("change keyup", getTerrainEffects);
+	$(".type1, .type2").bind("change", function () {
+		updateMagnetizeBoostsVisibility($(this).closest(".poke-info"));
+	});
 });
 
 /* Click-to-copy function */

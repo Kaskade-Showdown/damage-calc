@@ -544,7 +544,7 @@ var SETDEX_BW = {
     "ZU Coil": {"ability":"Intimidate","item":"Black Sludge","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Coil","Gunk Shot","Earthquake","Sucker Punch"]}
   },
   "Dugtrio": {
-    "OU May the Sand Force be with You": {"ability":"Sand Force","item":"Life Orb","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Stone Edge","Memento","Stealth Rock"]}
+    "OU May the Earth Force be with You": {"ability":"Earth Force","item":"Life Orb","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Stone Edge","Memento","Stealth Rock"]}
   },
   "Farfetch’d": {
     "NU Swords Dance \"Sweeper\"": {"ability":"Defiant","item":"Life Orb","nature":"Adamant","evs":{"at":252,"df":4,"sp":252},"moves":["Swords Dance","Brave Bird","Leaf Blade","Quick Attack"]}
@@ -769,9 +769,9 @@ var SETDEX_BW = {
     "Ubers Sun Support": {"ability":"Multitype","item":"Splash Plate","nature":"Calm","evs":{"hp":252,"sd":200,"sp":56},"moves":["Recover","Ice Beam","Thunder Wave","Roar"]}
   },
   "Roggenrola": {
-    "LC Autotomize Sweeper": {"level":5,"ability":"Sand Force","item":"Oran Berry","nature":"Jolly","evs":{"at":236,"sp":236},"moves":["Autotomize","Stone Edge","Earthquake","Explosion"]},
-    "LC Trick Room Sweeper": {"level":5,"ability":"Sand Force","item":"Life Orb","nature":"Brave","ivs":{"sp":0},"evs":{"hp":236,"at":236},"moves":["Stone Edge","Earthquake","Explosion","Return"]},
-    "LC Substitute": {"level":5,"ability":"Sand Force","item":"Life Orb","nature":"Naughty","evs":{"hp":236,"at":236},"moves":["Substitute","Stone Edge","Earthquake","Explosion"]},
+    "LC Autotomize Sweeper": {"level":5,"ability":"Earth Force","item":"Oran Berry","nature":"Jolly","evs":{"at":236,"sp":236},"moves":["Autotomize","Stone Edge","Earthquake","Explosion"]},
+    "LC Trick Room Sweeper": {"level":5,"ability":"Earth Force","item":"Life Orb","nature":"Brave","ivs":{"sp":0},"evs":{"hp":236,"at":236},"moves":["Stone Edge","Earthquake","Explosion","Return"]},
+    "LC Substitute": {"level":5,"ability":"Earth Force","item":"Life Orb","nature":"Naughty","evs":{"hp":236,"at":236},"moves":["Substitute","Stone Edge","Earthquake","Explosion"]},
     "LC Lead": {"level":5,"ability":"Sturdy","item":"Oran Berry","nature":"Adamant","evs":{"hp":236,"at":236},"moves":["Rock Blast","Stealth Rock","Protect","Explosion"]}
   },
   "Woobat": {
@@ -2393,7 +2393,7 @@ var SETDEX_BW = {
   },
   "Hippopotas": {
     "LC Sand Support": {"level":5,"ability":"Sand Stream","item":"Eviolite","nature":"Careful","evs":{"hp":132,"at":20,"df":132,"sd":180,"sp":20},"moves":["Earthquake","Stealth Rock","Slack Off","Crunch"]},
-    "ZU Physical Wall": {"ability":"Sand Force","item":"Eviolite","nature":"Impish","evs":{"hp":252,"at":4,"df":252},"moves":["Stealth Rock","Earthquake","Toxic","Slack Off"]}
+    "ZU Physical Wall": {"ability":"Earth Force","item":"Eviolite","nature":"Impish","evs":{"hp":252,"at":4,"df":252},"moves":["Stealth Rock","Earthquake","Toxic","Slack Off"]}
   },
   "Hippowdon": {
     "OU Mixed Wall": {"ability":"Sand Stream","item":"Leftovers","nature":"Careful","evs":{"hp":252,"df":12,"sd":244},"moves":["Slack Off","Earthquake","Stealth Rock","Whirlwind"]},
@@ -2702,14 +2702,14 @@ var SETDEX_BW = {
     "ZU Offensive Spinner": {"ability":"Mold Breaker","item":"Eviolite","nature":"Adamant","evs":{"hp":144,"at":252,"sp":112},"moves":["Rapid Spin","Earthquake","Swords Dance","Rock Slide"]}
   },
   "Excadrill": {
-    "OU Offensive": {"ability":"Sand Force","item":"Leftovers","nature":"Adamant","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Iron Head","Protect","Rapid Spin"]},
-    "OU Swords Dance": {"ability":"Sand Force","item":"Leftovers","nature":"Adamant","evs":{"at":252,"sd":4,"sp":252},"moves":["Swords Dance","Earthquake","Iron Head","Rapid Spin"]},
+    "OU Offensive": {"ability":"Earth Force","item":"Leftovers","nature":"Adamant","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Iron Head","Protect","Rapid Spin"]},
+    "OU Swords Dance": {"ability":"Earth Force","item":"Leftovers","nature":"Adamant","evs":{"at":252,"sd":4,"sp":252},"moves":["Swords Dance","Earthquake","Iron Head","Rapid Spin"]},
     "OU Specially Defensive": {"ability":"Mold Breaker","item":"Leftovers","nature":"Careful","evs":{"hp":208,"sd":252,"sp":48},"moves":["Earthquake","Rapid Spin","Toxic","Protect"]},
     "OU Choice Scarf": {"ability":"Mold Breaker","item":"Choice Scarf","nature":"Adamant","evs":{"at":252,"sd":4,"sp":252},"moves":["Earthquake","Iron Head","Rapid Spin","Rock Slide"]},
     "Ubers Bulky Rapid Spin": {"ability":"Mold Breaker","item":"Leftovers","nature":"Adamant","evs":{"hp":176,"at":60,"sd":252,"sp":20},"moves":["Rapid Spin","Earthquake","Swords Dance","Rock Slide"]},
     "Ubers Offensive Swords Dance": {"ability":"Sand Rush","item":"Life Orb","nature":"Adamant","evs":{"hp":4,"at":252,"sp":252},"moves":["Swords Dance","Earthquake","Rock Slide","Iron Head"]},
     "Doubles OU Sand Rush": {"ability":"Sand Rush","item":"Life Orb","nature":"Adamant","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Rock Slide","Substitute","Protect"]},
-    "Monotype Choice Item (Ground)": {"ability":"Sand Force","item":"Choice Scarf","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Rock Slide","Rapid Spin","Iron Head","Earthquake"]},
+    "Monotype Choice Item (Ground)": {"ability":"Earth Force","item":"Choice Scarf","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Rock Slide","Rapid Spin","Iron Head","Earthquake"]},
     "Monotype Specially Defensive (Ground)": {"ability":"Mold Breaker","item":"Leftovers","nature":"Careful","evs":{"hp":104,"sd":152,"sp":252},"moves":["Toxic","Rapid Spin","Stealth Rock","Earthquake"]},
     "Monotype Choice Scarf (Steel)": {"ability":"Mold Breaker","item":"Choice Scarf","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Earthquake","Iron Head","Rapid Spin","Rock Slide"]}
   },
@@ -3179,8 +3179,8 @@ var SETDEX_BW = {
     "Ubers Tailwind": {"ability":"Teravolt","item":"Life Orb","nature":"Naughty","evs":{"at":252,"sa":80,"sp":176},"moves":["Tailwind","Draco Meteor","Bolt Strike","Outrage"]}
   },
   "Landorus": {
-    "Ubers Choice Scarf": {"ability":"Sand Force","item":"Choice Scarf","nature":"Naive","evs":{"at":252,"sa":4,"sp":252},"moves":["Earthquake","Stone Edge","U-turn","Grass Knot"]},
-    "Ubers Swords Dance": {"ability":"Sand Force","item":"Life Orb","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Swords Dance","Earthquake","Stone Edge","Rock Polish"]}
+    "Ubers Choice Scarf": {"ability":"Earth Force","item":"Choice Scarf","nature":"Naive","evs":{"at":252,"sa":4,"sp":252},"moves":["Earthquake","Stone Edge","U-turn","Grass Knot"]},
+    "Ubers Swords Dance": {"ability":"Earth Force","item":"Life Orb","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Swords Dance","Earthquake","Stone Edge","Rock Polish"]}
   },
   "Landorus-Therian": {
     "OU Defensive": {"ability":"Intimidate","item":"Leftovers","nature":"Naive","ivs":{"hp":30,"df":30},"evs":{"hp":240,"df":16,"sp":252},"moves":["Stealth Rock","Earthquake","U-turn","Hidden Power Ice"]},

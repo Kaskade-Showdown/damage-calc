@@ -1,4 +1,4 @@
-import type {Generation, Weather, Terrain, TypeName, ID} from './data/interface';
+import type {Generation, ClimateWeather, IrritantWeather, EnergyWeather, ClearingWeather, CataclysmWeather, Terrain, TypeName, ID} from './data/interface';
 import type {Field, Side} from './field';
 import type {Move} from './move';
 import type {Pokemon} from './pokemon';
@@ -39,6 +39,7 @@ export interface RawDesc {
   isCritical?: boolean;
   isLightScreen?: boolean;
   isBurned?: boolean;
+  isFrostbitten?: boolean;
   isProtected?: boolean;
   isReflect?: boolean;
   isBattery?: boolean;
@@ -51,7 +52,11 @@ export interface RawDesc {
   moveType?: TypeName;
   rivalry?: 'buffed' | 'nerfed';
   terrain?: Terrain;
-  weather?: Weather;
+  climateWeather?: ClimateWeather;
+  irritantWeather?: IrritantWeather;
+  energyWeather?: EnergyWeather;
+  clearingWeather?: ClearingWeather;
+  cataclysmWeather?: CataclysmWeather;
   isDefenderDynamaxed?: boolean;
 }
 
@@ -71,7 +76,7 @@ export function display(
   const minDisplay = toDisplay(notation, min, defender.maxHP());
   const maxDisplay = toDisplay(notation, max, defender.maxHP());
 
-  const desc = buildDescription(rawDesc, attacker, defender);
+  const desc = buildDescription(rawDesc, attacker, defender, field.isWeatherBoosted);
   const damageText = `${min}-${max} (${minDisplay} - ${maxDisplay}${notation})`;
 
   if (move.category === 'Status' && !move.named('Nature Power')) return `${desc}: ${damageText}`;
@@ -147,7 +152,7 @@ export function getRecovery(
   if (move.drain) {
     // Parental Bond counts as multiple heals for drain moves, but not for Shell Bell
     // Currently no drain moves are multihit, however this covers for it.
-    if (attacker.hasAbility('Parental Bond') || move.hits > 1) {
+    if (attacker.hasAbility('Parental Bond', 'Echolocation') || move.hits > 1) {
       [minD, maxD] = multiDamageRange(damage) as [number[], number[]];
     }
     const percentHealed = move.drain[0] / move.drain[1];
@@ -292,11 +297,16 @@ export function getKOChance(
     return {chance: 1, n: 1, text: 'guaranteed OHKO'};
   }
 
-  const hazards = getHazards(gen, defender, field.defenderSide);
+  const isIndomitable = defender.hasAbility('Indomitable') &&
+    field.hasEnergyWeather('Dragon Force') && !defender.hasItem('Energy Nullifier');
+  const hazards = getHazards(gen, defender, field.defenderSide, isIndomitable);
   const eot = getEndOfTurn(gen, attacker, defender, move, field);
   const toxicCounter =
-    defender.hasStatus('tox') && !defender.hasAbility('Magic Guard', 'Poison Heal')
+    defender.hasStatus('tox') && !defender.hasAbility('Magic Guard', 'Poison Heal') && !isIndomitable
       ? defender.toxicCounter : 0;
+  const blightCounter =
+    defender.hasStatus('blt') && !defender.hasAbility('Magic Guard', 'Poison Heal') && !isIndomitable
+      ? defender.blightCounter : 0;
 
   // multi-hit moves have too many possibilities for brute-forcing to work, so reduce it
   // to an approximate distribution if greater than 3 hits
@@ -380,10 +390,10 @@ export function getKOChance(
 
   if ((move.timesUsed === 1 && move.timesUsedWithMetronome === 1) || move.isZ) {
     const chance = computeKOChance(
-      damage, defender.curHP() - hazards.damage, 0, 1, 1, defender.maxHP(), 0
+      damage, defender.curHP() - hazards.damage, 0, 1, 1, defender.maxHP(), 0, 0
     );
     const chanceWithEot = computeKOChance(
-      damage, defender.curHP() - hazards.damage, eot.damage, 1, 1, defender.maxHP(), toxicCounter
+      damage, defender.curHP() - hazards.damage, eot.damage, 1, 1, defender.maxHP(), toxicCounter, blightCounter
     );
 
     // checks if either chance is greater than 0
@@ -391,19 +401,19 @@ export function getKOChance(
 
     for (let i = 2; i <= 4; i++) {
       const chance = computeKOChance(
-        damage, defender.curHP() - hazards.damage, eot.damage, i, 1, defender.maxHP(), toxicCounter
+        damage, defender.curHP() - hazards.damage, eot.damage, i, 1, defender.maxHP(), toxicCounter, blightCounter
       );
       if (chance > 0) return KOChance(0, chance, i);
     }
 
     for (let i = 5; i <= 9; i++) {
       if (
-        predictTotal(damage[0], eot.damage, i, 1, toxicCounter, defender.maxHP()) >=
+        predictTotal(damage[0], eot.damage, i, 1, toxicCounter, blightCounter, defender.maxHP()) >=
         defender.curHP() - hazards.damage
       ) {
         return KOChance(0, 1, i);
       } else if (
-        predictTotal(damage[damage.length - 1], eot.damage, i, 1, toxicCounter, defender.maxHP()) >=
+        predictTotal(damage[damage.length - 1], eot.damage, i, 1, toxicCounter, blightCounter, defender.maxHP()) >=
         defender.curHP() - hazards.damage
       ) {
         // possible but no concrete chance
@@ -417,7 +427,8 @@ export function getKOChance(
       move.hits || 1,
       move.timesUsed || 1,
       defender.maxHP(),
-      toxicCounter
+      toxicCounter,
+      blightCounter
     );
     if (chance > 0) return KOChance(0, chance, move.timesUsed, chance === 1);
 
@@ -427,6 +438,7 @@ export function getKOChance(
       1,
       move.timesUsed,
       toxicCounter,
+      blightCounter,
       defender.maxHP()
     ) >=
       defender.curHP() - hazards.damage
@@ -439,6 +451,7 @@ export function getKOChance(
         1,
         move.timesUsed,
         toxicCounter,
+        blightCounter,
         defender.maxHP()
       ) >=
       defender.curHP() - hazards.damage
@@ -512,24 +525,24 @@ const TRAPPING = [
   'Thunder Cage', 'Whirlpool', 'Wrap', 'G-Max Sandblast', 'G-Max Centiferno',
 ];
 
-function getHazards(gen: Generation, defender: Pokemon, defenderSide: Side) {
+function getHazards(gen: Generation, defender: Pokemon, defenderSide: Side, isIndomitable: boolean) {
   let damage = 0;
   const texts: string[] = [];
 
   if (defender.hasItem('Heavy-Duty Boots')) {
     return {damage, texts};
   }
-  if (defenderSide.isSR && !defender.hasAbility('Magic Guard', 'Mountaineer')) {
+  if (defenderSide.isSR && !defender.hasAbility('Magic Guard', 'Mountaineer') && !isIndomitable) {
     const rockType = gen.types.get('rock' as ID)!;
     const effectiveness =
       defender.teraType && defender.teraType !== 'Stellar'
         ? rockType.effectiveness[defender.teraType]!
         : rockType.effectiveness[defender.types[0]]! *
           (defender.types[1] ? rockType.effectiveness[defender.types[1]]! : 1);
-    damage += Math.floor((effectiveness * defender.maxHP()) / 8);
+    damage += Math.min(Math.floor(defender.maxHP() / 4), Math.floor((effectiveness * defender.maxHP()) / 8));
     texts.push('Stealth Rock');
   }
-  if (defenderSide.steelsurge && !defender.hasAbility('Magic Guard', 'Mountaineer')) {
+  if (defenderSide.steelsurge && !defender.hasAbility('Magic Guard') && !isIndomitable) {
     const steelType = gen.types.get('steel' as ID)!;
     const effectiveness =
       defender.teraType && defender.teraType !== 'Stellar'
@@ -539,10 +552,26 @@ function getHazards(gen: Generation, defender: Pokemon, defenderSide: Side) {
     damage += Math.floor((effectiveness * defender.maxHP()) / 8);
     texts.push('Steelsurge');
   }
+  if (defenderSide.isSteelBarbs &&
+      !defender.hasType('Flying') &&
+      !defender.hasAbility('Magic Guard', 'Levitate', 'Relic Soul') &&
+      !defender.hasItem('Air Balloon') &&
+      !isIndomitable
+  ) {
+    const steelType = gen.types.get('steel' as ID)!;
+    const effectiveness =
+      defender.teraType && defender.teraType !== 'Stellar'
+        ? steelType.effectiveness[defender.teraType]!
+        : steelType.effectiveness[defender.types[0]]! *
+          (defender.types[1] ? steelType.effectiveness[defender.types[1]]! : 1);
+    damage += Math.min(Math.floor(defender.maxHP() / 4), Math.floor((effectiveness * defender.maxHP()) / 8));
+    texts.push('Steel Barbs');
+  }
 
   if (!defender.hasType('Flying') &&
-      !defender.hasAbility('Magic Guard', 'Levitate') &&
-      !defender.hasItem('Air Balloon')
+      !defender.hasAbility('Magic Guard', 'Levitate', 'Relic Soul') &&
+      !defender.hasItem('Air Balloon') &&
+      !isIndomitable
   ) {
     if (defenderSide.spikes === 1) {
       damage += Math.floor(defender.maxHP() / 8);
@@ -586,13 +615,17 @@ function getEndOfTurn(
       defender.hasItem('Covert Cloak') ||
       defender.hasAbility('Shield Dust', 'Aroma Veil')
     );
+  const isIndomitable = defender.hasAbility('Indomitable') &&
+    field.hasEnergyWeather('Dragon Force') && !defender.hasItem('Energy Nullifier');
+  const isAttackerIndomitable = attacker.hasAbility('Indomitable') &&
+    field.hasEnergyWeather('Dragon Force') && !attacker.hasItem('Energy Nullifier');
 
-  if (field.hasWeather('Sun', 'Harsh Sunshine')) {
+  if (field.hasClimateWeather('Sun', 'Desolate Land')) {
     if (defender.hasAbility('Dry Skin', 'Solar Power')) {
       damage -= Math.floor(defender.maxHP() / 8);
       texts.push(defender.ability + ' damage');
     }
-  } else if (field.hasWeather('Rain', 'Heavy Rain') && !healBlock) {
+  } else if (field.hasClimateWeather('Rain', 'Primordial Sea') && !healBlock) {
     if (defender.hasAbility('Dry Skin')) {
       damage += Math.floor(defender.maxHP() / 8);
       texts.push('Dry Skin recovery');
@@ -600,16 +633,7 @@ function getEndOfTurn(
       damage += Math.floor(defender.maxHP() / 16);
       texts.push('Rain Dish recovery');
     }
-  } else if (field.hasWeather('Sand')) {
-    if (
-      !defender.hasType('Rock', 'Ground', 'Steel') &&
-      !defender.hasAbility('Magic Guard', 'Overcoat', 'Sand Force', 'Sand Rush', 'Sand Veil') &&
-      !defender.hasItem('Safety Goggles')
-    ) {
-      damage -= Math.floor(defender.maxHP() / (gen.num === 2 ? 8 : 16));
-      texts.push('sandstorm damage');
-    }
-  } else if (field.hasWeather('Hail', 'Snow')) {
+  } else if (field.hasClimateWeather('Hail', 'Snow')) {
     if (defender.hasAbility('Ice Body') && !healBlock) {
       damage += Math.floor(defender.maxHP() / 16);
       texts.push('Ice Body recovery');
@@ -617,11 +641,110 @@ function getEndOfTurn(
       !defender.hasType('Ice') &&
       !defender.hasAbility('Magic Guard', 'Overcoat', 'Snow Cloak') &&
       !defender.hasItem('Safety Goggles') &&
-      field.hasWeather('Hail')
+      !isIndomitable &&
+      (field.hasClimateWeather('Hail') ||
+       (field.hasClimateWeather('Snow') && field.isWeatherBoosted &&
+        !defender.hasAbility('Absolute Zero', 'Droughtproof', 'Glacial Armor', 'Hydrophobic')))
     ) {
       damage -= Math.floor(defender.maxHP() / 16);
       texts.push('hail damage');
     }
+  } else if (field.hasClimateWeather('Blood Moon')) {
+    if (defender.hasAbility('Malice')) {
+      damage -= Math.floor(defender.maxHP() / 8);
+      texts.push(defender.ability + ' damage');
+    }
+  }
+  if (field.hasIrritantWeather('Sand')) {
+    if (
+      !defender.hasType('Rock', 'Ground', 'Steel') &&
+      !defender.hasAbility('Bubble Helm', 'Magic Guard', 'Overcoat', 'Earth Force', 'Sand Rush', 'Sand Veil') &&
+      !defender.hasItem('Safety Goggles') &&
+      !isIndomitable
+    ) {
+      damage -= Math.floor(defender.maxHP() / (gen.num === 2 ? 8 : 16));
+      texts.push('Sandstorm damage');
+    }
+  } else if (field.hasIrritantWeather('Dust') && !healBlock) {
+    if (defender.hasAbility('Dust Gather')) {
+      damage += Math.floor(defender.maxHP() / 16);
+      texts.push('Dust Gather recovery');
+    }
+  } else if (field.hasIrritantWeather('Pollen') && !healBlock) {
+    if (defender.hasAbility('Arena Bloom')) {
+      damage += Math.floor(defender.maxHP() / 16);
+      texts.push('Arena Bloom recovery');
+    }
+    if (defender.hasAbility('Bloomspring')) {
+      damage += Math.floor(defender.maxHP() / 16);
+      texts.push('Bloomspring recovery');
+    }
+  } else if (field.hasIrritantWeather('Smog')) {
+    if (
+      !defender.hasType('Steel', 'Poison') &&
+      !defender.hasAbility('Bubble Helm', 'Magic Guard', 'Overcoat', 'Carbon Capture') &&
+      !defender.hasItem('Safety Goggles') &&
+      !isIndomitable
+    ) {
+      texts.push('Smog poisoning');
+    }
+  } else if (field.hasIrritantWeather('Fairy Dust') && !healBlock) {
+    if (!defender.hasAbility('Bubble Helm')) {
+      damage += Math.floor(defender.maxHP() / 16);
+      texts.push('Fairy Dust recovery');
+    }
+  }
+  if (field.hasEnergyWeather('Paranormal Activity')) {
+    if (
+      !defender.hasType('Ghost', 'Normal', 'Dark') &&
+      !defender.hasAbility('Arena Curse', 'Magic Guard', 'Soul Drain') &&
+      !defender.hasItem('Energy Nullifier') &&
+      !isIndomitable
+    ) {
+      damage -= Math.floor(defender.maxHP() / 16);
+      texts.push('P.Activity damage');
+    }
+    if (!healBlock && defender.hasAbility('Arena Curse')) {
+      damage += Math.floor(defender.maxHP() / 16);
+      texts.push('Arena Curse recovery');
+    }
+  } else if (field.hasEnergyWeather('Dreamscape') && !healBlock) {
+    if (defender.hasAbility('Sweet Dreams')) {
+      damage += Math.floor(defender.maxHP() / 16);
+      texts.push('Sweet Dreams recovery');
+    }
+  } else if (field.hasEnergyWeather('Magnetosphere') && !healBlock) {
+    if (defender.hasAbility('Nanomachines')) {
+      damage += Math.floor(defender.maxHP() / 16);
+      texts.push('Nanomachines recovery');
+    }
+  }
+  if (field.hasEnergyWeather('Thunderstorm') &&
+      !defender.hasType('Electric', 'Ground') &&
+      !defender.hasAbility('Forked', 'Lightning Rod', 'Magic Guard', 'Motor Drive', 'Power Plumage', 'Volt Absorb') &&
+      !defender.hasItem('Energy Nullifier')) {
+    const electricType = gen.types.get('electric' as ID)!;
+    const electricEffectiveness =
+      defender.teraType && defender.teraType !== 'Stellar'
+        ? electricType.effectiveness[defender.teraType]!
+        : electricType.effectiveness[defender.types[0]]! *
+          (defender.types[1] ? electricType.effectiveness[defender.types[1]]! : 1);
+    if (electricEffectiveness > 0) {
+      damage -= Math.floor(defender.maxHP() * electricEffectiveness / 10);
+      texts.push('lightning damage');
+    }
+  }
+
+  if (defender.hasAbility('Root Control') && !healBlock) {
+    damage += Math.floor(defender.maxHP() / 16);
+    texts.push('Ingrain recovery');
+  }
+  if (attacker.hasAbility('Geiger Aura') &&
+    !defender.hasAbility('Magic Guard', 'Geiger Aura') &&
+    !isIndomitable
+  ) {
+    damage -= Math.floor(defender.maxHP() / 16);
+    texts.push('Geiger Aura damage');
   }
 
   if (defender.hasItem('Leftovers') && !loseItem && !healBlock) {
@@ -633,25 +756,25 @@ function getEndOfTurn(
         damage += Math.floor(defender.maxHP() / 16);
         texts.push('Black Sludge recovery');
       }
-    } else if (!defender.hasAbility('Magic Guard', 'Klutz')) {
+    } else if (!defender.hasAbility('Magic Guard', 'Klutz') && !isIndomitable) {
       damage -= Math.floor(defender.maxHP() / 8);
       texts.push('Black Sludge damage');
     }
   } else if (defender.hasItem('Sticky Barb') && !loseItem &&
-    !defender.hasAbility('Magic Guard', 'Klutz')) {
+    !defender.hasAbility('Magic Guard', 'Klutz') && !isIndomitable) {
     damage -= Math.floor(defender.maxHP() / 8);
     texts.push('Sticky Barb damage');
   }
 
   if (field.defenderSide.isSeeded) {
-    if (!defender.hasAbility('Magic Guard')) {
+    if (!defender.hasAbility('Magic Guard') && !isIndomitable) {
       // 1/16 in gen 1, 1/8 in gen 2 onwards
       damage -= Math.floor(defender.maxHP() / (gen.num === 0 || gen.num >= 2 ? 8 : 16));
       texts.push('Leech Seed damage');
     }
   }
 
-  if (field.attackerSide.isSeeded && !attacker.hasAbility('Magic Guard')) {
+  if (field.attackerSide.isSeeded && !attacker.hasAbility('Magic Guard') && !isAttackerIndomitable) {
     let recovery = Math.floor(attacker.maxHP() / (gen.num === 0 || gen.num >= 2 ? 8 : 16));
     if (defender.hasItem('Big Root')) recovery = Math.trunc(recovery * 5324 / 4096);
     if (attacker.hasAbility('Liquid Ooze')) {
@@ -676,7 +799,7 @@ function getEndOfTurn(
         damage += Math.floor(defender.maxHP() / 8);
         texts.push('Poison Heal');
       }
-    } else if (!defender.hasAbility('Magic Guard')) {
+    } else if (!defender.hasAbility('Magic Guard') && !isIndomitable) {
       damage -= Math.floor(defender.maxHP() / (gen.num === 1 ? 16 : 8));
       texts.push('poison damage');
     }
@@ -686,28 +809,47 @@ function getEndOfTurn(
         damage += Math.floor(defender.maxHP() / 8);
         texts.push('Poison Heal');
       }
-    } else if (!defender.hasAbility('Magic Guard')) {
+    } else if (!defender.hasAbility('Magic Guard') && !isIndomitable) {
       texts.push('toxic damage');
+    }
+  } else if (defender.hasStatus('blt')) {
+    if (defender.hasAbility('Poison Heal')) {
+      if (!healBlock) {
+        damage += Math.floor(defender.maxHP() / 8);
+        texts.push('Poison Heal');
+      }
+    } else if (!defender.hasAbility('Magic Guard') && !isIndomitable) {
+      texts.push('blight damage');
     }
   } else if (defender.hasStatus('brn')) {
     if (defender.hasAbility('Heatproof')) {
       damage -= Math.floor(defender.maxHP() / (gen.num === 0 || gen.num > 6 ? 32 : 16));
       texts.push('reduced burn damage');
-    } else if (!defender.hasAbility('Magic Guard')) {
+    } else if (!defender.hasAbility('Magic Guard') && !isIndomitable) {
       damage -= Math.floor(defender.maxHP() / (gen.num < 2 || gen.num > 6 ? 16 : 8));
       texts.push('burn damage');
+    }
+  } else if (defender.hasStatus('fst')) {
+    if (!defender.hasAbility('Magic Guard') && !isIndomitable) {
+      damage -= Math.floor(defender.maxHP() / 16);
+      texts.push('frostbite damage');
+    }
+  } else if (defender.hasStatus('blt')) {
+    if (!defender.hasAbility('Magic Guard') && !isIndomitable &&
+        defender.blightCounter > 0) {
+      texts.push('blight damage');
     }
   } else if (
     (defender.hasStatus('slp') || defender.hasAbility('Comatose')) &&
     attacker.hasAbility('Bad Dreams') &&
-    !defender.hasAbility('Magic Guard')
+    !defender.hasAbility('Magic Guard') && !isIndomitable
   ) {
     damage -= Math.floor(defender.maxHP() / 8);
     texts.push('Bad Dreams');
   }
 
   if (
-    !defender.hasAbility('Magic Guard') && TRAPPING.includes(move.name) &&
+    !defender.hasAbility('Magic Guard') && !isIndomitable && TRAPPING.includes(move.name) &&
     (gen.num === 0 || gen.num > 1)
   ) {
     if (attacker.hasItem('Binding Band')) {
@@ -718,37 +860,37 @@ function getEndOfTurn(
       texts.push('trapping damage');
     }
   }
-  if (field.defenderSide.isSaltCured && !defender.hasAbility('Magic Guard')) {
+  if (field.defenderSide.isSaltCured && !defender.hasAbility('Magic Guard') && !isIndomitable) {
     const isWaterOrSteel = defender.hasType('Water', 'Steel');
     const divisor = gen.num === 0 ? isWaterOrSteel ? 8 : 16 : isWaterOrSteel ? 4 : 8;
     damage -= Math.floor(defender.maxHP() / divisor);
     texts.push('Salt Cure');
   }
-  if (!defender.hasType('Fire') && !defender.hasAbility('Magic Guard') &&
+  if (!defender.hasType('Fire') && !defender.hasAbility('Magic Guard') && !isIndomitable &&
       (move.named('Fire Pledge (Grass Pledge Boosted)', 'Grass Pledge (Fire Pledge Boosted)'))) {
     damage -= Math.floor(defender.maxHP() / 8);
     texts.push('Sea of Fire damage');
   }
 
-  if (!defender.hasAbility('Magic Guard') && !defender.hasType('Grass') &&
+  if (!defender.hasAbility('Magic Guard') && !isIndomitable && !defender.hasType('Grass') &&
       (field.defenderSide.vinelash || move.named('G-Max Vine Lash'))) {
     damage -= Math.floor(defender.maxHP() / 6);
     texts.push('Vine Lash damage');
   }
 
-  if (!defender.hasAbility('Magic Guard') && !defender.hasType('Fire') &&
+  if (!defender.hasAbility('Magic Guard') && !isIndomitable && !defender.hasType('Fire') &&
       (field.defenderSide.wildfire || move.named('G-Max Wildfire'))) {
     damage -= Math.floor(defender.maxHP() / 6);
     texts.push('Wildfire damage');
   }
 
-  if (!defender.hasAbility('Magic Guard') && !defender.hasType('Water') &&
+  if (!defender.hasAbility('Magic Guard') && !isIndomitable && !defender.hasType('Water') &&
       (field.defenderSide.cannonade || move.named('G-Max Cannonade'))) {
     damage -= Math.floor(defender.maxHP() / 6);
     texts.push('Cannonade damage');
   }
 
-  if (!defender.hasAbility('Magic Guard') && !defender.hasType('Rock') &&
+  if (!defender.hasAbility('Magic Guard') && !isIndomitable && !defender.hasType('Rock') &&
       (field.defenderSide.volcalith || move.named('G-Max Volcalith'))) {
     damage -= Math.floor(defender.maxHP() / 6);
     texts.push('Volcalith damage');
@@ -764,12 +906,18 @@ function computeKOChance(
   hits: number,
   timesUsed: number,
   maxHP: number,
-  toxicCounter: number
+  toxicCounter: number,
+  blightCounter: number
 ) {
   let toxicDamage = 0;
+  let blightDamage = 0;
   if (toxicCounter > 0) {
     toxicDamage = Math.floor((toxicCounter * maxHP) / 16);
     toxicCounter++;
+  }
+  if (blightCounter > 0) {
+    blightDamage = Math.floor((blightCounter * maxHP) / 8);
+    blightCounter++;
   }
   const n = damage.length;
   if (hits === 1) {
@@ -781,9 +929,17 @@ function computeKOChance(
       eot = 0;
       toxicDamage = 0;
     }
+    if (eot - blightDamage > 0) {
+      eot = 0;
+      blightDamage = 0;
+    }
     for (let i = 0; i < n; i++) {
       if (damage[n - 1] - eot + toxicDamage < hp) return 0;
       if (damage[i] - eot + toxicDamage >= hp) {
+        return (n - i) / n;
+      }
+      if (damage[n - 1] - eot + blightDamage < hp) return 0;
+      if (damage[i] - eot + blightDamage >= hp) {
         return (n - i) / n;
       }
     }
@@ -796,12 +952,13 @@ function computeKOChance(
     if (i === 0 || damage[i] !== damage[i - 1]) {
       c = computeKOChance(
         damage,
-        hp - damage[i] + eot - toxicDamage,
+        hp - damage[i] + eot - toxicDamage - blightDamage,
         eot,
         hits - 1,
         timesUsed,
         maxHP,
-        toxicCounter
+        toxicCounter,
+        blightCounter
       );
     } else {
       c = lastc;
@@ -823,9 +980,11 @@ function predictTotal(
   hits: number,
   timesUsed: number,
   toxicCounter: number,
+  blightCounter: number,
   maxHP: number
 ) {
   let toxicDamage = 0;
+  let blightDamage = 0;
   // hits - 1 is used in this for loop, as well as in the total = ...  calcs later
   // the last turn of eot damage is calculated separately
   // since if the damage is less than 0 (healing)
@@ -839,11 +998,22 @@ function predictTotal(
     }
     lastTurnEot -= Math.floor(((toxicCounter + (hits - 1)) * maxHP) / 16);
   }
+  if (blightCounter > 0) {
+    for (let i = 0; i < hits - 1; i++) {
+      toxicDamage += Math.floor(((blightCounter + i) * maxHP) / 8);
+    }
+    lastTurnEot -= Math.floor(((blightCounter + (hits - 1)) * maxHP) / 8);
+  }
   let total = 0;
   if (hits > 1 && timesUsed === 1) {
     total = damage * hits - eot * (hits - 1) + toxicDamage;
   } else {
     total = damage - eot * (hits - 1) + toxicDamage;
+  }
+  if (hits > 1 && timesUsed === 1) {
+    total = damage * hits - eot * (hits - 1) + blightDamage;
+  } else {
+    total = damage - eot * (hits - 1) + blightDamage;
   }
   // if the net eot health gain is negative for the last turn, include it in the total
   if (lastTurnEot < 0) total -= lastTurnEot;
@@ -940,7 +1110,7 @@ function squashMultihit(gen: Generation, d: number[], hits: number, err = true) 
     }
   } else if (d.length === 256) {
     if (hits > 1) {
-      error(err, `Unexpected # of hits for Parental Bond: ${hits}`);
+      error(err, `Unexpected # of hits for Parental Bond/Echolocation: ${hits}`);
     }
     // FIXME: Come up with a better Parental Bond approximation
     const r: number[] = [];
@@ -958,7 +1128,7 @@ function squashMultihit(gen: Generation, d: number[], hits: number, err = true) 
   }
 }
 
-function buildDescription(description: RawDesc, attacker: Pokemon, defender: Pokemon) {
+function buildDescription(description: RawDesc, attacker: Pokemon, defender: Pokemon, isWeatherBoosted = false) {
   const [attackerLevel, defenderLevel] = getDescriptionLevels(attacker, defender);
   let output = '';
   if (description.attackBoost) {
@@ -974,6 +1144,9 @@ function buildDescription(description: RawDesc, attacker: Pokemon, defender: Pok
   output = appendIfSet(output, description.rivalry);
   if (description.isBurned) {
     output += 'burned ';
+  }
+  if (description.isFrostbitten) {
+    output += 'frostbitten ';
   }
   if (description.alliesFainted) {
     output += Math.min(5, description.alliesFainted) +
@@ -1057,13 +1230,15 @@ function buildDescription(description: RawDesc, attacker: Pokemon, defender: Pok
     output += `Tera ${description.defenderTera} `;
   }
   output += description.defenderName;
-  if (description.weather && description.terrain) {
-    output += ' in ' + description.weather + ' and ' + description.terrain + ' Terrain';
-  } else if (description.weather) {
-    output += ' in ' + description.weather;
-  } else if (description.terrain) {
-    output += ' in ' + description.terrain + ' Terrain';
-  }
+  const swPrefix = isWeatherBoosted ? 'SW-boosted ' : '';
+  const inParts: string[] = [];
+  if (description.climateWeather) inParts.push(swPrefix + description.climateWeather);
+  if (description.irritantWeather) inParts.push(swPrefix + description.irritantWeather);
+  if (description.clearingWeather) inParts.push(description.clearingWeather);
+  if (description.cataclysmWeather) inParts.push(description.cataclysmWeather);
+  if (description.energyWeather) inParts.push(swPrefix + description.energyWeather);
+  if (description.terrain) inParts.push(description.terrain + ' Terrain');
+  if (inParts.length > 0) output += ' in ' + inParts.join(' and ');
   if (description.isReflect) {
     output += ' through Reflect';
   } else if (description.isLightScreen) {

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 
-import type {AbilityName, Terrain, Weather} from '../data/interface';
+import type {AbilityName, Terrain, ClimateWeather, IrritantWeather} from '../data/interface';
 import {inGen, inGens, tests} from './helper';
 
 describe('calc', () => {
@@ -19,10 +19,17 @@ describe('calc', () => {
           Pokemon('Blastoise'),
           Move('Judgment')
         );
-        expect(result.range()).toEqual([194, 230]);
-        expect(result.desc()).toBe(
-          '0 SpA Meadow Plate Arceus Judgment vs. 0 HP / 0 SpD Blastoise: 194-230 (64.8 - 76.9%) -- guaranteed 2HKO'
-        );
+        if (gen === 7) {
+          expect(result.range()).toEqual([210, 248]);
+          expect(result.desc()).toBe(
+            '0 SpA Meadow Plate Arceus Judgment vs. 0 HP / 0 SpD Blastoise: 210-248 (70.2 - 82.9%) -- guaranteed 2HKO'
+          );
+        } else {
+          expect(result.range()).toEqual([194, 230]);
+          expect(result.desc()).toBe(
+            '0 SpA Meadow Plate Arceus Judgment vs. 0 HP / 0 SpD Blastoise: 194-230 (64.8 - 76.9%) -- guaranteed 2HKO'
+          );
+        }
       });
     });
 
@@ -133,21 +140,21 @@ describe('calc', () => {
       test(`Weather Ball should change type depending on the weather (gen ${gen})`, () => {
         const weathers = [
           {
-            weather: 'Sun', type: 'Fire', damage: {
+            climateWeather: 'Sun', type: 'Fire', damage: {
               adv: {range: [346, 408], desc: '(149.7 - 176.6%) -- guaranteed OHKO'},
               dpp: {range: [342, 404], desc: '(148 - 174.8%) -- guaranteed OHKO'},
               modern: {range: [344, 408], desc: '(148.9 - 176.6%) -- guaranteed OHKO'},
             },
           },
           {
-            weather: 'Rain', type: 'Water', damage: {
+            climateWeather: 'Rain', type: 'Water', damage: {
               adv: {range: [86, 102], desc: '(37.2 - 44.1%) -- guaranteed 3HKO'},
               dpp: {range: [85, 101], desc: '(36.7 - 43.7%) -- guaranteed 3HKO'},
               modern: {range: [86, 102], desc: '(37.2 - 44.1%) -- guaranteed 3HKO'},
             },
           },
           {
-            weather: 'Sand', type: 'Rock', damage: {
+            irritantWeather: 'Sand', type: 'Rock', damage: {
               adv: {
                 range: [96, 114],
                 desc: '(41.5 - 49.3%) -- 82.4% chance to 2HKO after sandstorm damage',
@@ -163,7 +170,7 @@ describe('calc', () => {
             },
           },
           {
-            weather: 'Hail', type: 'Ice', damage: {
+            climateWeather: 'Hail', type: 'Ice', damage: {
               adv: {
                 range: [234, 276],
                 desc: '(101.2 - 119.4%) -- guaranteed OHKO',
@@ -180,7 +187,13 @@ describe('calc', () => {
           },
         ];
 
-        for (const {weather, type, damage} of weathers) {
+        for (const entry of weathers) {
+          const {type, damage} = entry as {type: string; damage: {adv: any; dpp: any; modern: any}};
+          const climateW = (entry as any).climateWeather as ClimateWeather | undefined;
+          const irritantW = (entry as any).irritantWeather as IrritantWeather | undefined;
+          const weather = climateW ?? irritantW;
+          const fieldOpts = climateW ? {climateWeather: climateW} : {irritantWeather: irritantW};
+          const weatherPrefix = climateW ? 'in' : 'during';
           const dmg = gen === 3 ? damage.adv : gen === 4 ? damage.dpp : damage.modern;
           const [atk, def] = gen === 3 && type === 'Rock' ? ['Atk', 'Def'] : ['SpA', 'SpD'];
 
@@ -188,11 +201,11 @@ describe('calc', () => {
             Pokemon('Castform'),
             Pokemon('Bulbasaur'),
             Move('Weather Ball'),
-            Field({weather: weather as Weather})
+            Field(fieldOpts)
           );
           expect(result.range()).toEqual(dmg.range);
           expect(result.desc()).toBe(
-            `0 ${atk} Castform Weather Ball (100 BP ${type}) vs. 0 HP / 0 ${def} Bulbasaur in ${weather}: ${dmg.range[0]}-${dmg.range[1]} ${dmg.desc}`
+            `0 ${atk} Castform Weather Ball (100 BP ${type}) vs. 0 HP / 0 ${def} Bulbasaur ${weatherPrefix} ${weather}: ${dmg.range[0]}-${dmg.range[1]} ${dmg.desc}`
           );
         }
       });
@@ -729,7 +742,7 @@ describe('calc', () => {
     inGens([3, 9], ({gen, calculate, Pokemon, Move, Field}) => {
       test(`End of turn damage is calculated correctly after 1-4 turns (gen ${gen})`, () => {
         const field = Field({
-          weather: 'Sand',
+          irritantWeather: 'Sand',
           defenderSide: {
             isSeeded: true,
           },
@@ -754,7 +767,7 @@ describe('calc', () => {
     inGens([3, 9], ({gen, calculate, Pokemon, Move, Field}) => {
       test(`End of turn damage is calculated correctly on the first turn (gen ${gen})`, () => {
         const field = Field({
-          weather: 'Sand',
+          irritantWeather: 'Sand',
         });
         const chansey = Pokemon('Chansey', {
           level: 90,
@@ -783,7 +796,7 @@ describe('calc', () => {
         });
 
         const field = Field({
-          weather: 'Rain',
+          climateWeather: 'Rain',
         });
 
         const move = Move('Stone Edge');
@@ -1303,7 +1316,7 @@ describe('calc', () => {
         const field = Field({
           gameType: 'Doubles',
           terrain: 'Grassy',
-          weather: 'Hail',
+          climateWeather: 'Hail',
           defenderSide: {
             isSR: true,
             spikes: 1,
@@ -1391,7 +1404,7 @@ describe('calc', () => {
         });
         const wynaut = Pokemon('Wynaut', {level: 1, boosts: {spd: -6}});
         const waterSpout = Move('Water Spout');
-        const field = Field({weather: 'Rain', attackerSide: {isHelpingHand: true}});
+        const field = Field({climateWeather: 'Rain', attackerSide: {isHelpingHand: true}});
 
         expect(calculate(kyogre, wynaut, waterSpout, field).range()).toEqual([55, 66]);
 
@@ -1453,7 +1466,7 @@ describe('calc', () => {
         });
         const deerling = Pokemon('Deerling', {evs: {hp: 36}});
         const blizzard = Move('Blizzard');
-        const hail = Field({weather: 'Hail'});
+        const hail = Field({climateWeather: 'Hail'});
         const result = calculate(abomasnow, deerling, blizzard, hail);
         expect(result.desc()).toBe(
           'Lvl 55 252 SpA Choice Specs Abomasnow Blizzard vs. 36 HP / 0 SpD Deerling: 236-278 (87.4 - 102.9%) -- 25% chance to OHKO (56.3% chance to OHKO after hail damage)'
@@ -1540,7 +1553,7 @@ describe('calc', () => {
         defender.teraType = 'Normal';
         expect(calc(cc)).toEqual(se);
       });
-      function testQP(ability: string, field?: {weather?: Weather; terrain?: Terrain}) {
+      function testQP(ability: string, field?: {climateWeather?: ClimateWeather; terrain?: Terrain}) {
         test(`${ability} should take into account boosted stats by default`, () => {
           const attacker = Pokemon('Iron Leaves', {ability, boostedStat: 'auto', boosts: {spa: 6}});
           // highest stat = defense
@@ -1555,7 +1568,7 @@ describe('calc', () => {
           expect(result.defenderAbility).toBeUndefined();
         });
       }
-      function testQPOverride(ability: string, field?: {weather?: Weather; terrain?: Terrain}) {
+      function testQPOverride(ability: string, field?: {climateWeather?: ClimateWeather; terrain?: Terrain}) {
         test(`${ability} should be able to be overridden with boostedStat`, () => {
           const attacker = Pokemon('Flutter Mane', {ability, boostedStat: 'atk', boosts: {spa: 6}});
           // highest stat = defense
@@ -1571,9 +1584,9 @@ describe('calc', () => {
         });
       }
       testQP('Quark Drive', {terrain: 'Electric'});
-      testQP('Protosynthesis', {weather: 'Sun'});
+      testQP('Protosynthesis', {climateWeather: 'Sun'});
       testQPOverride('Quark Drive', {terrain: 'Electric'});
-      testQPOverride('Protosynthesis', {weather: 'Sun'});
+      testQPOverride('Protosynthesis', {climateWeather: 'Sun'});
       test('Meteor Beam/Electro Shot', () => {
         const defender = Pokemon('Arceus');
         const testCase = (options: {[k: string]: any}, expected: number) => {
@@ -1591,7 +1604,7 @@ describe('calc', () => {
         const attacker = Pokemon('Smeargle');
         const defender = Pokemon('Gouging Fire', {'ability': 'Protosynthesis', 'item': 'Blunder Policy'});
         const field = Field({
-          weather: 'Sun',
+          climateWeather: 'Sun',
         });
 
         const knockOff = calculate(attacker, defender, Move('Knock Off'), field);
@@ -1604,7 +1617,7 @@ describe('calc', () => {
         const attacker = Pokemon('Smeargle');
         const defender = Pokemon('Iron Valiant', {'ability': 'Quark Drive', 'item': 'Blunder Policy'});
         const field = Field({
-          weather: 'Sun',
+          climateWeather: 'Sun',
         });
 
         const knockOff = calculate(attacker, defender, Move('Knock Off'), field);
@@ -1634,7 +1647,7 @@ describe('calc', () => {
         const attacker = Pokemon('Weavile');
         const defender = Pokemon('Vulpix');
         const field = Field({
-          weather: 'Sun',
+          climateWeather: 'Sun',
           attackerSide: {
             isFlowerGift: true,
             isPowerSpot: true,
@@ -1878,7 +1891,7 @@ describe('calc', () => {
           const move = Move('Weather Ball');
 
           const defender = Pokemon('Tyranitar', {ability: 'Sand Stream'});
-          const sandField = Field({weather: 'Sand'});
+          const sandField = Field({irritantWeather: 'Sand'});
 
           const result = calculate(attacker, defender, move, sandField);
 
@@ -1889,7 +1902,7 @@ describe('calc', () => {
           const move = Move('Solar Beam');
 
           const sandDefender = Pokemon('Tyranitar', {ability: 'Sand Stream'});
-          const sandField = Field({weather: 'Sand'});
+          const sandField = Field({irritantWeather: 'Sand'});
           const sandResult = calculate(attacker, sandDefender, move, sandField);
 
           expect(sandResult.move.bp).toBe(move.bp);
@@ -1912,11 +1925,11 @@ describe('calc', () => {
           const move = Move('Giga Drain');
 
           const sandDefender = Pokemon('Tyranitar', {ability: 'Sand Stream'});
-          const sandField = Field({weather: 'Sand'});
+          const sandField = Field({irritantWeather: 'Sand'});
           const sandResult = calculate(attacker, sandDefender, move, sandField);
 
           const noSandDefender = Pokemon('Tyranitar', {ability: 'Unnerve'});
-          const noSandField = Field({weather: undefined});
+          const noSandField = Field({climateWeather: undefined});
           const noSandResult = calculate(attacker, noSandDefender, move, noSandField);
 
           expect(sandResult.range()[0]).toEqual(noSandResult.range()[0]);
@@ -1927,11 +1940,11 @@ describe('calc', () => {
           const move = Move('Body Slam');
 
           const snowDefender = Pokemon('Abomasnow', {ability: 'Snow Warning'});
-          const snowField = Field({weather: 'Snow'});
+          const snowField = Field({climateWeather: 'Snow'});
           const snowResult = calculate(attacker, snowDefender, move, snowField);
 
           const noSnowDefender = Pokemon('Abomasnow', {ability: 'Soundproof'});
-          const noSnowField = Field({weather: undefined});
+          const noSnowField = Field({climateWeather: undefined});
           const noSnowResult = calculate(attacker, noSnowDefender, move, noSnowField);
 
           expect(snowResult.range()[0]).toEqual(noSnowResult.range()[0]);

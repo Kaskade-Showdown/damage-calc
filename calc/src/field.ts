@@ -1,9 +1,14 @@
 import type {State} from './state';
-import type {GameType, Weather, Terrain} from './data/interface';
+import type {GameType, ClimateWeather, IrritantWeather, EnergyWeather, ClearingWeather, CataclysmWeather, Terrain} from './data/interface';
 
 export class Field implements State.Field {
   gameType: GameType;
-  weather?: Weather;
+  climateWeather?: ClimateWeather;
+  irritantWeather?: IrritantWeather;
+  energyWeather?: EnergyWeather;
+  clearingWeather?: ClearingWeather;
+  cataclysmWeather?: CataclysmWeather;
+  isWeatherBoosted: boolean;
   terrain?: Terrain;
   isMagicRoom: boolean;
   isWonderRoom: boolean;
@@ -21,7 +26,12 @@ export class Field implements State.Field {
   constructor(field: Partial<State.Field> = {}) {
     this.gameType = field.gameType || 'Singles';
     this.terrain = field.terrain;
-    this.weather = field.weather;
+    this.climateWeather = field.climateWeather;
+    this.irritantWeather = field.irritantWeather;
+    this.energyWeather = field.energyWeather;
+    this.clearingWeather = field.clearingWeather;
+    this.cataclysmWeather = field.cataclysmWeather;
+    this.isWeatherBoosted = !!field.isWeatherBoosted;
     this.isMagicRoom = !!field.isMagicRoom;
     this.isWonderRoom = !!field.isWonderRoom;
     this.isGravity = !!field.isGravity;
@@ -37,8 +47,24 @@ export class Field implements State.Field {
     this.defenderSide = new Side(field.defenderSide || {});
   }
 
-  hasWeather(...weathers: Weather[]) {
-    return !!(this.weather && weathers.includes(this.weather));
+  hasClimateWeather(...weathers: ClimateWeather[]) {
+    return !!(this.climateWeather && weathers.includes(this.climateWeather));
+  }
+
+  hasIrritantWeather(...weathers: IrritantWeather[]) {
+    return !!(this.irritantWeather && weathers.includes(this.irritantWeather));
+  }
+
+  hasEnergyWeather(...weathers: EnergyWeather[]) {
+    return !!(this.energyWeather && weathers.includes(this.energyWeather));
+  }
+
+  hasClearingWeather(...weathers: ClearingWeather[]) {
+    return !!(this.clearingWeather && weathers.includes(this.clearingWeather));
+  }
+
+  hasCataclysmWeather(...weathers: CataclysmWeather[]) {
+    return !!(this.cataclysmWeather && weathers.includes(this.cataclysmWeather));
   }
 
   hasTerrain(...terrains: Terrain[]) {
@@ -53,7 +79,12 @@ export class Field implements State.Field {
   clone() {
     return new Field({
       gameType: this.gameType,
-      weather: this.weather,
+      climateWeather: this.climateWeather,
+      irritantWeather: this.irritantWeather,
+      energyWeather: this.energyWeather,
+      clearingWeather: this.clearingWeather,
+      cataclysmWeather: this.cataclysmWeather,
+      isWeatherBoosted: this.isWeatherBoosted,
       terrain: this.terrain,
       isMagicRoom: this.isMagicRoom,
       isWonderRoom: this.isWonderRoom,
@@ -95,6 +126,7 @@ export class Side implements State.Side {
   isPowerSpot: boolean;
   isSteelySpirit: boolean;
   isSwitching?: 'out' | 'in';
+  isSteelBarbs: boolean;
 
   constructor(side: State.Side = {}) {
     this.spikes = side.spikes || 0;
@@ -120,6 +152,7 @@ export class Side implements State.Side {
     this.isPowerSpot = !!side.isPowerSpot;
     this.isSteelySpirit = !!side.isSteelySpirit;
     this.isSwitching = side.isSwitching;
+    this.isSteelBarbs = !!side.isSteelBarbs;
   }
 
   clone() {

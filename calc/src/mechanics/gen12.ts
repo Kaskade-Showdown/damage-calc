@@ -226,16 +226,16 @@ export function calculateRBYGSC(
 
   baseDamage = Math.min(997, baseDamage) + 2;
 
-  if ((field.hasWeather('Sun') && move.hasType('Fire')) ||
-      (field.hasWeather('Rain') && move.hasType('Water'))) {
+  if ((field.hasClimateWeather('Sun') && move.hasType('Fire')) ||
+      (field.hasClimateWeather('Rain') && move.hasType('Water'))) {
     baseDamage = Math.floor(baseDamage * 1.5);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
   } else if (
-    (field.hasWeather('Sun') && move.hasType('Water')) ||
-    (field.hasWeather('Rain') && (move.hasType('Fire') || move.named('Solar Beam')))
+    (field.hasClimateWeather('Sun') && move.hasType('Water')) ||
+    (field.hasClimateWeather('Rain') && (move.hasType('Fire') || move.named('Solar Beam')))
   ) {
     baseDamage = Math.floor(baseDamage / 2);
-    desc.weather = field.weather;
+    desc.climateWeather = field.climateWeather;
   }
 
   if (move.hasType(...attacker.types)) {

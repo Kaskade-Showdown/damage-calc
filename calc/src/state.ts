@@ -20,6 +20,8 @@ export namespace State {
     status?: I.StatusName | '';
     teraType?: I.TypeName;
     toxicCounter?: number;
+    blightCounter?: number;
+    magnetizeBoosts?: number;
     moves?: I.MoveName[];
     overrides?: Partial<I.Specie>;
   }
@@ -38,7 +40,12 @@ export namespace State {
 
   export interface Field {
     gameType: I.GameType;
-    weather?: I.Weather;
+    climateWeather?: I.ClimateWeather;
+    irritantWeather?: I.IrritantWeather;
+    energyWeather?: I.EnergyWeather;
+    clearingWeather?: I.ClearingWeather;
+    cataclysmWeather?: I.CataclysmWeather;
+    isWeatherBoosted?: boolean;
     terrain?: I.Terrain;
     isMagicRoom?: boolean;
     isWonderRoom?: boolean;
@@ -77,6 +84,7 @@ export namespace State {
     isBattery?: boolean;
     isPowerSpot?: boolean;
     isSteelySpirit?: boolean;
+    isSteelBarbs?: boolean;
     isSwitching?: 'out' | 'in';
   }
 }

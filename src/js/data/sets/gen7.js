@@ -606,14 +606,14 @@ var SETDEX_SM = {
     "LC Focus Sash": {"level":5,"ability":"Arena Trap","item":"Focus Sash","nature":"Jolly","evs":{"hp":36,"at":236,"sp":236},"moves":["Earthquake","Sucker Punch","Rock Slide","Memento"]}
   },
   "Diglett-Alola": {
-    "LC Sand Sweeper": {"level":5,"ability":"Sand Force","item":"Life Orb","nature":"Jolly","evs":{"hp":36,"at":236,"df":36,"sp":196},"moves":["Iron Head","Earthquake","Rock Slide","Substitute"]}
+    "LC Sand Sweeper": {"level":5,"ability":"Earth Force","item":"Life Orb","nature":"Jolly","evs":{"hp":36,"at":236,"df":36,"sp":196},"moves":["Iron Head","Earthquake","Rock Slide","Substitute"]}
   },
   "Dugtrio": {
     "Ubers Utility Trapper": {"ability":"Arena Trap","item":"Groundium Z","nature":"Adamant","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Screech","Substitute","Memento"]},
-    "PU Suicide Lead": {"ability":"Sand Force","item":"Focus Sash","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Stone Edge","Memento","Stealth Rock"]},
+    "PU Suicide Lead": {"ability":"Earth Force","item":"Focus Sash","nature":"Jolly","evs":{"at":252,"df":4,"sp":252},"moves":["Earthquake","Stone Edge","Memento","Stealth Rock"]},
     "Monotype Revenge Killer": {"ability":"Arena Trap","item":"Focus Sash","nature":"Naive","ivs":{"hp":21,"df":0,"sd":0},"evs":{"at":252,"sa":4,"sp":252},"moves":["Earthquake","Reversal","Sucker Punch","Sludge Wave"]},
-    "ZU SubToxic": {"ability":"Sand Force","item":"Leftovers","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Earthquake","Stone Edge","Substitute","Toxic"]},
-    "ZU Hyper Offense Lead": {"ability":"Sand Force","item":"Focus Sash","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Earthquake","Toxic","Stealth Rock","Memento"]}
+    "ZU SubToxic": {"ability":"Earth Force","item":"Leftovers","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Earthquake","Stone Edge","Substitute","Toxic"]},
+    "ZU Hyper Offense Lead": {"ability":"Earth Force","item":"Focus Sash","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Earthquake","Toxic","Stealth Rock","Memento"]}
   },
   "Dugtrio-Alola": {
     "PU Substitute + Toxic": {"ability":"Tangling Hair","item":"Leftovers","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Earthquake","Iron Head","Substitute","Toxic"]},
@@ -1460,10 +1460,10 @@ var SETDEX_SM = {
     "1v1 Taunt + 3 Attacks": {"ability":"Sturdy","item":"Steelixite","nature":"Adamant","evs":{"hp":232,"at":160,"sd":116},"moves":["Taunt","Earthquake","Rock Blast","Heavy Slam"]}
   },
   "Steelix-Mega": {
-    "UU Offensive Stealth Rock": {"ability":"Sand Force","item":"Steelixite","nature":"Brave","ivs":{"sp":0},"evs":{"hp":252,"at":208,"sd":48},"moves":["Stealth Rock","Gyro Ball","Earthquake","Curse"]},
-    "Monotype Curse (Ground)": {"ability":"Sand Force","item":"Steelixite","nature":"Impish","evs":{"hp":252,"at":4,"sd":252},"moves":["Curse","Heavy Slam","Rest","Sleep Talk"]},
-    "1v1 Stallbreaker": {"ability":"Sand Force","item":"Steelixite","nature":"Adamant","evs":{"at":232,"sd":48,"sp":228},"moves":["Taunt","Bulldoze","Rest","Heavy Slam"]},
-    "1v1 Taunt + 3 Attacks": {"ability":"Sand Force","item":"Steelixite","nature":"Adamant","evs":{"hp":232,"at":160,"sd":116},"moves":["Taunt","Earthquake","Rock Blast","Heavy Slam"]}
+    "UU Offensive Stealth Rock": {"ability":"Earth Force","item":"Steelixite","nature":"Brave","ivs":{"sp":0},"evs":{"hp":252,"at":208,"sd":48},"moves":["Stealth Rock","Gyro Ball","Earthquake","Curse"]},
+    "Monotype Curse (Ground)": {"ability":"Earth Force","item":"Steelixite","nature":"Impish","evs":{"hp":252,"at":4,"sd":252},"moves":["Curse","Heavy Slam","Rest","Sleep Talk"]},
+    "1v1 Stallbreaker": {"ability":"Earth Force","item":"Steelixite","nature":"Adamant","evs":{"at":232,"sd":48,"sp":228},"moves":["Taunt","Bulldoze","Rest","Heavy Slam"]},
+    "1v1 Taunt + 3 Attacks": {"ability":"Earth Force","item":"Steelixite","nature":"Adamant","evs":{"hp":232,"at":160,"sd":116},"moves":["Taunt","Earthquake","Rock Blast","Heavy Slam"]}
   },
   "Snubbull": {
     "LC Berry Juice": {"level":5,"ability":"Intimidate","item":"Berry Juice","nature":"Impish","evs":{"hp":36,"at":116,"df":116,"sd":196,"sp":36},"moves":["Play Rough","Fire Punch","Thief","Earthquake"]},
@@ -2812,10 +2812,10 @@ var SETDEX_SM = {
     "CAP Showdown Usage": {"ability":"Rough Skin","item":"Rockium Z","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Earthquake","Stealth Rock","Swords Dance","Stone Edge"]}
   },
   "Garchomp-Mega": {
-    "OU Mixed Mega": {"ability":"Sand Force","item":"Garchompite","nature":"Hasty","evs":{"at":4,"sa":252,"sp":252},"moves":["Draco Meteor","Earthquake","Fire Blast","Stealth Rock"]},
-    "OU Swords Dance Mega": {"ability":"Sand Force","item":"Garchompite","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Swords Dance","Substitute","Earthquake","Stone Edge"]},
-    "Monotype Mixed Wallbreaker (Ground)": {"ability":"Sand Force","item":"Garchompite","nature":"Naive","evs":{"at":4,"sa":252,"sp":252},"moves":["Draco Meteor","Earthquake","Fire Blast","Stone Edge"]},
-    "Battle Spot Doubles Showdown Usage": {"level":50,"ability":"Sand Force","item":"Garchompite","nature":"Adamant","evs":{"hp":52,"at":252,"df":4,"sd":4,"sp":196},"moves":["Earthquake","Rock Slide","Protect","Swords Dance"]}
+    "OU Mixed Mega": {"ability":"Earth Force","item":"Garchompite","nature":"Hasty","evs":{"at":4,"sa":252,"sp":252},"moves":["Draco Meteor","Earthquake","Fire Blast","Stealth Rock"]},
+    "OU Swords Dance Mega": {"ability":"Earth Force","item":"Garchompite","nature":"Jolly","evs":{"at":252,"sd":4,"sp":252},"moves":["Swords Dance","Substitute","Earthquake","Stone Edge"]},
+    "Monotype Mixed Wallbreaker (Ground)": {"ability":"Earth Force","item":"Garchompite","nature":"Naive","evs":{"at":4,"sa":252,"sp":252},"moves":["Draco Meteor","Earthquake","Fire Blast","Stone Edge"]},
+    "Battle Spot Doubles Showdown Usage": {"level":50,"ability":"Earth Force","item":"Garchompite","nature":"Adamant","evs":{"hp":52,"at":252,"df":4,"sd":4,"sp":196},"moves":["Earthquake","Rock Slide","Protect","Swords Dance"]}
   },
   "Munchlax": {
     "LC Recycle + Berry Juice Tank": {"level":5,"ability":"Thick Fat","item":"Berry Juice","nature":"Adamant","evs":{"at":236,"df":36,"sd":236},"moves":["Return","Earthquake","Pursuit","Recycle"]},
