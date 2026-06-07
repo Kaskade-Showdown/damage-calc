@@ -156,16 +156,16 @@ describe('calc', () => {
           {
             irritantWeather: 'Sand', type: 'Rock', damage: {
               adv: {
-                range: [96, 114],
-                desc: '(41.5 - 49.3%) -- 82.4% chance to 2HKO after sandstorm damage',
+                range: [145, 171],
+                desc: '(62.7 - 74%) -- guaranteed 2HKO after sandstorm damage',
               },
               dpp: {
-                range: [77, 91],
-                desc: '(33.3 - 39.3%) -- guaranteed 3HKO after sandstorm damage',
+                range: [115, 136],
+                desc: '(49.7 - 58.8%) -- guaranteed 2HKO after sandstorm damage',
               },
               modern: {
-                range: [77, 91],
-                desc: '(33.3 - 39.3%) -- guaranteed 3HKO after sandstorm damage',
+                range: [115, 136],
+                desc: '(49.7 - 58.8%) -- guaranteed 2HKO after sandstorm damage',
               },
             },
           },
@@ -193,7 +193,7 @@ describe('calc', () => {
           const irritantW = (entry as any).irritantWeather as IrritantWeather | undefined;
           const weather = climateW ?? irritantW;
           const fieldOpts = climateW ? {climateWeather: climateW} : {irritantWeather: irritantW};
-          const weatherPrefix = climateW ? 'in' : 'during';
+          const weatherPrefix = 'in';
           const dmg = gen === 3 ? damage.adv : gen === 4 ? damage.dpp : damage.modern;
           const [atk, def] = gen === 3 && type === 'Rock' ? ['Atk', 'Def'] : ['SpA', 'SpD'];
 

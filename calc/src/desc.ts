@@ -1,4 +1,7 @@
-import type {Generation, ClimateWeather, IrritantWeather, EnergyWeather, ClearingWeather, CataclysmWeather, Terrain, TypeName, ID} from './data/interface';
+import type {
+  Generation, ClimateWeather, IrritantWeather, EnergyWeather,
+  ClearingWeather, CataclysmWeather, Terrain, TypeName, ID,
+} from './data/interface';
 import type {Field, Side} from './field';
 import type {Move} from './move';
 import type {Pokemon} from './pokemon';
@@ -302,10 +305,12 @@ export function getKOChance(
   const hazards = getHazards(gen, defender, field.defenderSide, isIndomitable);
   const eot = getEndOfTurn(gen, attacker, defender, move, field);
   const toxicCounter =
-    defender.hasStatus('tox') && !defender.hasAbility('Magic Guard', 'Poison Heal') && !isIndomitable
+    defender.hasStatus('tox') && !defender.hasAbility('Magic Guard', 'Poison Heal') &&
+      !isIndomitable
       ? defender.toxicCounter : 0;
   const blightCounter =
-    defender.hasStatus('blt') && !defender.hasAbility('Magic Guard', 'Poison Heal') && !isIndomitable
+    defender.hasStatus('blt') && !defender.hasAbility('Magic Guard', 'Poison Heal') &&
+      !isIndomitable
       ? defender.blightCounter : 0;
 
   // multi-hit moves have too many possibilities for brute-forcing to work, so reduce it
@@ -393,7 +398,8 @@ export function getKOChance(
       damage, defender.curHP() - hazards.damage, 0, 1, 1, defender.maxHP(), 0, 0
     );
     const chanceWithEot = computeKOChance(
-      damage, defender.curHP() - hazards.damage, eot.damage, 1, 1, defender.maxHP(), toxicCounter, blightCounter
+      damage, defender.curHP() - hazards.damage, eot.damage, 1, 1,
+      defender.maxHP(), toxicCounter, blightCounter
     );
 
     // checks if either chance is greater than 0
@@ -401,7 +407,8 @@ export function getKOChance(
 
     for (let i = 2; i <= 4; i++) {
       const chance = computeKOChance(
-        damage, defender.curHP() - hazards.damage, eot.damage, i, 1, defender.maxHP(), toxicCounter, blightCounter
+        damage, defender.curHP() - hazards.damage, eot.damage, i, 1,
+        defender.maxHP(), toxicCounter, blightCounter
       );
       if (chance > 0) return KOChance(0, chance, i);
     }
@@ -413,7 +420,8 @@ export function getKOChance(
       ) {
         return KOChance(0, 1, i);
       } else if (
-        predictTotal(damage[damage.length - 1], eot.damage, i, 1, toxicCounter, blightCounter, defender.maxHP()) >=
+        predictTotal(damage[damage.length - 1], eot.damage, i, 1,
+          toxicCounter, blightCounter, defender.maxHP()) >=
         defender.curHP() - hazards.damage
       ) {
         // possible but no concrete chance
@@ -525,7 +533,9 @@ const TRAPPING = [
   'Thunder Cage', 'Whirlpool', 'Wrap', 'G-Max Sandblast', 'G-Max Centiferno',
 ];
 
-function getHazards(gen: Generation, defender: Pokemon, defenderSide: Side, isIndomitable: boolean) {
+function getHazards(
+  gen: Generation, defender: Pokemon, defenderSide: Side, isIndomitable: boolean
+) {
   let damage = 0;
   const texts: string[] = [];
 
@@ -539,7 +549,9 @@ function getHazards(gen: Generation, defender: Pokemon, defenderSide: Side, isIn
         ? rockType.effectiveness[defender.teraType]!
         : rockType.effectiveness[defender.types[0]]! *
           (defender.types[1] ? rockType.effectiveness[defender.types[1]]! : 1);
-    damage += Math.min(Math.floor(defender.maxHP() / 4), Math.floor((effectiveness * defender.maxHP()) / 8));
+    damage += Math.min(
+      Math.floor(defender.maxHP() / 4), Math.floor((effectiveness * defender.maxHP()) / 8)
+    );
     texts.push('Stealth Rock');
   }
   if (defenderSide.steelsurge && !defender.hasAbility('Magic Guard') && !isIndomitable) {
@@ -564,7 +576,9 @@ function getHazards(gen: Generation, defender: Pokemon, defenderSide: Side, isIn
         ? steelType.effectiveness[defender.teraType]!
         : steelType.effectiveness[defender.types[0]]! *
           (defender.types[1] ? steelType.effectiveness[defender.types[1]]! : 1);
-    damage += Math.min(Math.floor(defender.maxHP() / 4), Math.floor((effectiveness * defender.maxHP()) / 8));
+    damage += Math.min(
+      Math.floor(defender.maxHP() / 4), Math.floor((effectiveness * defender.maxHP()) / 8)
+    );
     texts.push('Steel Barbs');
   }
 
@@ -658,12 +672,14 @@ function getEndOfTurn(
   if (field.hasIrritantWeather('Sand')) {
     if (
       !defender.hasType('Rock', 'Ground', 'Steel') &&
-      !defender.hasAbility('Bubble Helm', 'Magic Guard', 'Overcoat', 'Earth Force', 'Sand Rush', 'Sand Veil') &&
+      !defender.hasAbility(
+        'Bubble Helm', 'Magic Guard', 'Overcoat', 'Earth Force', 'Sand Rush', 'Sand Veil'
+      ) &&
       !defender.hasItem('Safety Goggles') &&
       !isIndomitable
     ) {
       damage -= Math.floor(defender.maxHP() / (gen.num === 2 ? 8 : 16));
-      texts.push('Sandstorm damage');
+      texts.push('sandstorm damage');
     }
   } else if (field.hasIrritantWeather('Dust') && !healBlock) {
     if (defender.hasAbility('Dust Gather')) {
@@ -721,7 +737,9 @@ function getEndOfTurn(
   }
   if (field.hasEnergyWeather('Thunderstorm') &&
       !defender.hasType('Electric', 'Ground') &&
-      !defender.hasAbility('Forked', 'Lightning Rod', 'Magic Guard', 'Motor Drive', 'Power Plumage', 'Volt Absorb') &&
+      !defender.hasAbility(
+        'Forked', 'Lightning Rod', 'Magic Guard', 'Motor Drive', 'Power Plumage', 'Volt Absorb'
+      ) &&
       !defender.hasItem('Energy Nullifier')) {
     const electricType = gen.types.get('electric' as ID)!;
     const electricEffectiveness =
@@ -774,7 +792,8 @@ function getEndOfTurn(
     }
   }
 
-  if (field.attackerSide.isSeeded && !attacker.hasAbility('Magic Guard') && !isAttackerIndomitable) {
+  if (field.attackerSide.isSeeded && !attacker.hasAbility('Magic Guard') &&
+      !isAttackerIndomitable) {
     let recovery = Math.floor(attacker.maxHP() / (gen.num === 0 || gen.num >= 2 ? 8 : 16));
     if (defender.hasItem('Big Root')) recovery = Math.trunc(recovery * 5324 / 4096);
     if (attacker.hasAbility('Liquid Ooze')) {
@@ -833,11 +852,6 @@ function getEndOfTurn(
     if (!defender.hasAbility('Magic Guard') && !isIndomitable) {
       damage -= Math.floor(defender.maxHP() / 16);
       texts.push('frostbite damage');
-    }
-  } else if (defender.hasStatus('blt')) {
-    if (!defender.hasAbility('Magic Guard') && !isIndomitable &&
-        defender.blightCounter > 0) {
-      texts.push('blight damage');
     }
   } else if (
     (defender.hasStatus('slp') || defender.hasAbility('Comatose')) &&
@@ -984,7 +998,7 @@ function predictTotal(
   maxHP: number
 ) {
   let toxicDamage = 0;
-  let blightDamage = 0;
+  const blightDamage = 0;
   // hits - 1 is used in this for loop, as well as in the total = ...  calcs later
   // the last turn of eot damage is calculated separately
   // since if the damage is less than 0 (healing)
@@ -1006,14 +1020,9 @@ function predictTotal(
   }
   let total = 0;
   if (hits > 1 && timesUsed === 1) {
-    total = damage * hits - eot * (hits - 1) + toxicDamage;
+    total = damage * hits - eot * (hits - 1) + toxicDamage + blightDamage;
   } else {
-    total = damage - eot * (hits - 1) + toxicDamage;
-  }
-  if (hits > 1 && timesUsed === 1) {
-    total = damage * hits - eot * (hits - 1) + blightDamage;
-  } else {
-    total = damage - eot * (hits - 1) + blightDamage;
+    total = damage - eot * (hits - 1) + toxicDamage + blightDamage;
   }
   // if the net eot health gain is negative for the last turn, include it in the total
   if (lastTurnEot < 0) total -= lastTurnEot;
@@ -1128,7 +1137,9 @@ function squashMultihit(gen: Generation, d: number[], hits: number, err = true) 
   }
 }
 
-function buildDescription(description: RawDesc, attacker: Pokemon, defender: Pokemon, isWeatherBoosted = false) {
+function buildDescription(
+  description: RawDesc, attacker: Pokemon, defender: Pokemon, isWeatherBoosted = false
+) {
   const [attackerLevel, defenderLevel] = getDescriptionLevels(attacker, defender);
   let output = '';
   if (description.attackBoost) {

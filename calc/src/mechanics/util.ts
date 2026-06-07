@@ -101,7 +101,8 @@ export function getFinalSpeed(gen: Generation, pokemon: Pokemon, field: Field, s
   // Pledge swamp would get applied here when implemented
   // speedMods.push(1024);
 
-  if (field.hasIrritantWeather('Dust') && pokemon.hasType('Ground') && !pokemon.hasItem('Safety Goggles')) {
+  if (field.hasIrritantWeather('Dust') && pokemon.hasType('Ground') &&
+      !pokemon.hasItem('Safety Goggles')) {
     speedMods.push(5120);
   }
   if (field.hasIrritantWeather('Pheromones') && !pokemon.hasItem('Safety Goggles') &&
@@ -121,10 +122,15 @@ export function getFinalSpeed(gen: Generation, pokemon: Pokemon, field: Field, s
       (pokemon.hasAbility('Sand Rush') && field.hasIrritantWeather('Sand')) ||
       (pokemon.hasAbility('Swift Swim') && field.hasClimateWeather('Rain', 'Primordial Sea')) ||
       (pokemon.hasAbility('Slush Rush') && field.hasClimateWeather('Hail', 'Snow')) ||
-      (pokemon.hasAbility('Shadow Step') && (field.hasClimateWeather('Blood Moon') || field.hasEnergyWeather('Paranormal Activity'))) ||
-      (pokemon.hasAbility('Energizer') && field.hasEnergyWeather('Thunderstorm') && !pokemon.hasItem('Energy Nullifier')) ||
-      (pokemon.hasAbility('Surge Surfer') && (terrain === 'Electric' || field.hasEnergyWeather('Thunderstorm'))) ||
-      (pokemon.hasAbility('Magnapult') && field.hasEnergyWeather('Magnetosphere') && !pokemon.hasItem('Energy Nullifier'))
+      (pokemon.hasAbility('Shadow Step') &&
+        (field.hasClimateWeather('Blood Moon') ||
+          field.hasEnergyWeather('Paranormal Activity'))) ||
+      (pokemon.hasAbility('Energizer') && field.hasEnergyWeather('Thunderstorm') &&
+        !pokemon.hasItem('Energy Nullifier')) ||
+      (pokemon.hasAbility('Surge Surfer') &&
+        (terrain === 'Electric' || field.hasEnergyWeather('Thunderstorm'))) ||
+      (pokemon.hasAbility('Magnapult') && field.hasEnergyWeather('Magnetosphere') &&
+        !pokemon.hasItem('Energy Nullifier'))
   ) {
     speedMods.push(8192);
   } else if (pokemon.hasAbility('Quick Feet') && pokemon.status) {
@@ -327,7 +333,8 @@ export function checkDauntlessShield(source: Pokemon, gen: Generation) {
 }
 
 export function checkWindRider(source: Pokemon, attackingSide: Side, field: Field) {
-  if (source.hasAbility('Wind Rider') && (attackingSide.isTailwind || field.hasClearingWeather('Strong Winds'))) {
+  if (source.hasAbility('Wind Rider') &&
+      (attackingSide.isTailwind || field.hasClearingWeather('Strong Winds'))) {
     source.boosts.atk = Math.min(6, source.boosts.atk + 1);
   }
 }

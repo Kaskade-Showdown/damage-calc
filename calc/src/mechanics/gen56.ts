@@ -527,7 +527,8 @@ export function calculateBasePowerBWXY(
     desc.moveBP = basePower;
     break;
   case 'Weather Ball':
-    basePower = move.bp * (!!(field.climateWeather || field.irritantWeather || field.energyWeather) ? 2 : 1);
+    basePower = move.bp *
+      (field.climateWeather || field.irritantWeather || field.energyWeather ? 2 : 1);
     desc.moveBP = basePower;
     break;
   case 'Fling':
@@ -735,7 +736,9 @@ export function calculateBPModsBWXY(
   } else if (gen.num > 5 && move.named('Knock Off') && !resistedKnockOffDamage) {
     bpMods.push(6144);
     desc.moveBP = basePower * 1.5;
-  } else if (move.named('Solar Beam') && (field.hasClimateWeather('Rain', 'Primordial Sea', 'Hail') || field.hasIrritantWeather('Sand'))) {
+  } else if (move.named('Solar Beam') &&
+      (field.hasClimateWeather('Rain', 'Primordial Sea', 'Hail') ||
+        field.hasIrritantWeather('Sand'))) {
     bpMods.push(2048);
     desc.moveBP = basePower / 2;
     if (field.hasIrritantWeather('Sand')) desc.irritantWeather = field.irritantWeather;

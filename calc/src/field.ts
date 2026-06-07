@@ -1,5 +1,8 @@
 import type {State} from './state';
-import type {GameType, ClimateWeather, IrritantWeather, EnergyWeather, ClearingWeather, CataclysmWeather, Terrain} from './data/interface';
+import type {
+  GameType, ClimateWeather, IrritantWeather, EnergyWeather,
+  ClearingWeather, CataclysmWeather, Terrain,
+} from './data/interface';
 
 export class Field implements State.Field {
   gameType: GameType;

@@ -10797,7 +10797,7 @@ const SWSE_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
     abilities: {0: 'Multiscale'},
     baseSpecies: 'Lapras',
   },
-  Eevee: {otherFormes: ['Eevee-Gmax', 'Eevee-Starter',],},
+  Eevee: {otherFormes: ['Eevee-Gmax', 'Eevee-Starter']},
   Natu: {abilities: {0: 'Magic Bounce'}},
   Xatu: {abilities: {0: 'Magic Bounce'}},
   Marill: {otherFormes: ['Marill-Kaskade']},
@@ -10879,84 +10879,84 @@ const SWSE_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   },
   'Castform-Sandy': {
     types: ['Rock'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Dusty': {
     types: ['Ground'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Allergy': {
     types: ['Grass'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Swarmy': {
     types: ['Bug'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Smoggy': {
     types: ['Poison'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Lovely': {
     types: ['Fairy'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Gutsy': {
     types: ['Fighting'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Spooky': {
     types: ['Ghost'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Zenny': {
     types: ['Psychic'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Sorcery': {
     types: ['Dragon'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Zappy': {
     types: ['Electric'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
   },
   'Castform-Windy': {
     types: ['Flying'],
-   bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
+    bs: {hp: 90, at: 85, df: 85, sa: 85, sd: 85, sp: 85},
     weightkg: 0.8,
     abilities: {0: 'Forecast'},
     baseSpecies: 'Castform',
@@ -11312,7 +11312,9 @@ const SWSE_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
   Cetitan: {abilities: {0: 'Glacial Armor'}},
 };
 
-const SV: {[name: string]: SpeciesData} = extend(true, {}, SS, PLA_PATCH, SV_PATCH, ZA_PATCH, SWSE_PATCH);
+const SV: {[name: string]: SpeciesData} = extend(
+  true, {}, SS, PLA_PATCH, SV_PATCH, ZA_PATCH, SWSE_PATCH
+);
 
 for (const [, specie] of Object.entries(SV)) {
   if (specie.otherFormes) {

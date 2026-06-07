@@ -426,7 +426,8 @@ export function calculateBasePowerDPP(
     desc.moveBP = move.hits === 2 ? 30 : move.hits === 3 ? 60 : 10;
     break;
   case 'Weather Ball':
-    basePower = move.bp * (!!(field.climateWeather || field.irritantWeather || field.energyWeather) ? 2 : 1);
+    basePower = move.bp *
+      (field.climateWeather || field.irritantWeather || field.energyWeather ? 2 : 1);
     desc.moveBP = basePower;
     break;
   default:
@@ -685,7 +686,8 @@ function calculateFinalModsDPP(
   } else if (
     (field.hasClimateWeather('Sun') && move.hasType('Water')) ||
     (field.hasClimateWeather('Rain') && move.hasType('Fire')) ||
-    (move.named('Solar Beam') && (field.hasClimateWeather('Rain', 'Primordial Sea', 'Hail', 'Snow') ||
+    (move.named('Solar Beam') &&
+      (field.hasClimateWeather('Rain', 'Primordial Sea', 'Hail', 'Snow') ||
       field.hasIrritantWeather('Sand')))
   ) {
     baseDamage = Math.floor(baseDamage * 0.5);

@@ -22,7 +22,8 @@ export type IrritantWeather =
   | 'Sand' | 'Dust' | 'Pollen' | 'Pheromones' | 'Smog' | 'Fairy Dust';
 
 export type EnergyWeather =
-  | 'Battle Aura' | 'Paranormal Activity' | 'Dreamscape' | 'Dragon Force' | 'Thunderstorm' | 'Magnetosphere';
+  | 'Battle Aura' | 'Paranormal Activity' | 'Dreamscape'
+  | 'Dragon Force' | 'Thunderstorm' | 'Magnetosphere';
 
 export type ClearingWeather = 'Strong Winds' | 'Delta Stream';
 

@@ -141,7 +141,9 @@ export function calculateChampions(
       : field.hasIrritantWeather('Sand') ? 'Rock'
       : field.hasClimateWeather('Hail', 'Snow') ? 'Ice'
       : 'Normal';
-    isMegaSol ? desc.attackerAbility = attacker.ability : desc.climateWeather = field.climateWeather;
+    isMegaSol
+      ? desc.attackerAbility = attacker.ability
+      : desc.climateWeather = field.climateWeather;
     desc.moveType = type;
   } else if (
     move.originalName === 'Terrain Pulse' && isGrounded(attacker, field)
@@ -672,7 +674,9 @@ export function calculateBPModsChampions(
     bpMods.push(6144);
     desc.moveBP = basePower * 1.5;
   } else if (move.named('Solar Beam', 'Solar Blade') &&
-      (field.hasClimateWeather('Rain', 'Hail', 'Snow') || field.hasIrritantWeather('Sand')) && !attacker.hasAbility('Mega Sol')) {
+      (field.hasClimateWeather('Rain', 'Hail', 'Snow') ||
+        field.hasIrritantWeather('Sand')) &&
+      !attacker.hasAbility('Mega Sol')) {
     bpMods.push(2048);
     desc.moveBP = basePower / 2;
     desc.climateWeather = field.climateWeather;
@@ -1002,13 +1006,17 @@ function calculateBaseDamageChampions(
     ((field.hasClimateWeather('Rain') && !isMegaSol) && move.hasType('Water'))
   ) {
     baseDamage = pokeRound(OF32(baseDamage * 6144) / 4096);
-    isMegaSol ? desc.attackerAbility = attacker.ability : desc.climateWeather = field.climateWeather;
+    isMegaSol
+      ? desc.attackerAbility = attacker.ability
+      : desc.climateWeather = field.climateWeather;
   } else if (
     ((field.hasClimateWeather('Sun') || isMegaSol) && move.hasType('Water')) ||
     (field.hasClimateWeather('Rain') && move.hasType('Fire'))
   ) {
     baseDamage = pokeRound(OF32(baseDamage * 2048) / 4096);
-    isMegaSol ? desc.attackerAbility = attacker.ability : desc.climateWeather = field.climateWeather;
+    isMegaSol
+      ? desc.attackerAbility = attacker.ability
+      : desc.climateWeather = field.climateWeather;
   }
 
   if (isCritical) {

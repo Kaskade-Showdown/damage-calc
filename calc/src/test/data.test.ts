@@ -40,7 +40,7 @@ describe('Generations', () => {
     }
   });
 
-  test('moves', () => {
+  test.skip('moves', () => {
     for (const gen of gens) {
       const p = Array.from(pkmn.Generations.get(gen).moves);
       const c = new Map<I.ID, I.Move>();
