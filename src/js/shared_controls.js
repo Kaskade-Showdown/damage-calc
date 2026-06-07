@@ -749,6 +749,7 @@ function updateAllWeatherEffects() {
 	updateEvergreenFormes();
 	updateFlowerGiftForme();
 	updateForecastForme();
+	updateMagnetizeBoosts();
 	updatePowerPlumageForme();
 	updateSwarmingForme();
 	updateSWTerrain();
